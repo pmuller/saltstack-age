@@ -3,7 +3,9 @@ name = "saltstack-age-renderer"
 version = "0.1.0"
 description = "age renderer for Saltstack"
 authors = [{ name = "Philippe Muller" }]
-dependencies = []
+dependencies = [
+    "pexpect>=4.9.0",
+]
 readme = "README.md"
 requires-python = ">= 3.8"
 
