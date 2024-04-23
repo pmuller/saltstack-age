@@ -1,4 +1,7 @@
 import os
+from pathlib import Path
+from salt.exceptions import SaltRenderError
+import subprocess
 import pexpect
 import collections
 import typing
@@ -20,7 +23,7 @@ def _get_passphrase_from_environment() -> str:
     return passphrase
 
 
-def _decrypt(encrypted_value: str) -> str:
+def _decrypt_with_passphrase(encrypted_value: str) -> str:
     passphrase = _get_passphrase_from_environment()
     process = pexpect.spawn("age", ["-d"], encoding="ascii")
     process.send(encrypted_value)
@@ -29,6 +32,30 @@ def _decrypt(encrypted_value: str) -> str:
     # XXX: WTF is that?
     process.expect("\r\r\n\x1b\\[F\x1b\\[K")
     return process.read()
+
+
+def _decrypt_with_identity(identity_file: str, encrypted_value: str) -> str:
+    if not Path(identity_file).is_file():
+        raise SaltRenderError(f"age_identity_file not found: {identity_file}")
+
+    return subprocess.run(
+        ["age", "-d", "-i", identity_file],
+        input=encrypted_value.encode(),
+        check=True,
+        stdout=subprocess.PIPE,
+    ).stdout.decode()
+
+
+def _decrypt(encrypted_value: str) -> str:
+    if "config.get" in __salt__:
+        identity_file = __salt__["config.get"]("age_identity_file")
+        if identity_file:
+            return _decrypt_with_identity(identity_file, encrypted_value)
+
+    if "AGE_PASSPHRASE" in os.environ:
+        return _decrypt_with_passphrase(encrypted_value)
+
+    raise SaltRenderError("No age identity file or passphrase configured")
 
 
 def render(
