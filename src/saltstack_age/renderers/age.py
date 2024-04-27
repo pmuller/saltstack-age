@@ -23,8 +23,7 @@ def _get_passphrase_from_environment() -> str:
     return passphrase
 
 
-def _decrypt_with_passphrase(encrypted_value: str) -> str:
-    passphrase = _get_passphrase_from_environment()
+def decrypt_with_passphrase(encrypted_value: str, passphrase: str) -> str:
     process = pexpect.spawn("age", ["-d"], encoding="ascii")
     process.send(encrypted_value)
     process.expect("Enter passphrase: ")
@@ -53,7 +52,8 @@ def _decrypt(encrypted_value: str) -> str:
             return decrypt_with_identity(identity_file, encrypted_value)
 
     if "AGE_PASSPHRASE" in os.environ:
-        return _decrypt_with_passphrase(encrypted_value)
+        passphrase = _get_passphrase_from_environment()
+        return decrypt_with_passphrase(encrypted_value, passphrase)
 
     raise SaltRenderError("No age identity file or passphrase configured")
 
