@@ -34,7 +34,7 @@ def _decrypt_with_passphrase(encrypted_value: str) -> str:
     return process.read()
 
 
-def _decrypt_with_identity(identity_file: str, encrypted_value: str) -> str:
+def decrypt_with_identity(identity_file: str, encrypted_value: str) -> str:
     if not Path(identity_file).is_file():
         raise SaltRenderError(f"age_identity_file not found: {identity_file}")
 
@@ -50,7 +50,7 @@ def _decrypt(encrypted_value: str) -> str:
     if "config.get" in __salt__:
         identity_file = __salt__["config.get"]("age_identity_file")
         if identity_file:
-            return _decrypt_with_identity(identity_file, encrypted_value)
+            return decrypt_with_identity(identity_file, encrypted_value)
 
     if "AGE_PASSPHRASE" in os.environ:
         return _decrypt_with_passphrase(encrypted_value)
