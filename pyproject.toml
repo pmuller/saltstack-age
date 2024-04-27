@@ -13,6 +13,7 @@ requires-python = ">= 3.8"
 managed = true
 dev-dependencies = [
     "ipython>=8.23.0",
+    "pytest>=8.1.2",
 ]
 
 [project.entry-points."salt.loader"]
