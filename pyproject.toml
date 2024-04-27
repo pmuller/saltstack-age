@@ -1,18 +1,29 @@
 [project]
-name = "saltstack-age-renderer"
+name = "saltstack-age"
 version = "0.1.0"
 description = "age renderer for Saltstack"
 authors = [{ name = "Philippe Muller" }]
 dependencies = [
     "pexpect>=4.9.0",
-    "salt>=3007.0",
 ]
 readme = "README.md"
 requires-python = ">= 3.8"
 
 [tool.rye]
 managed = true
-virtual = true
 dev-dependencies = [
     "ipython>=8.23.0",
 ]
+
+[project.entry-points."salt.loader"]
+saltstack-age = "saltstack_age"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/saltstack_age"]
+
+[tool.hatch.metadata]
+allow-direct-references = true
