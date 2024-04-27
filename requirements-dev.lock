@@ -10,10 +10,21 @@
 -e file:.
 asttokens==2.4.1
     # via stack-data
+attrs==23.2.0
+    # via pytest-salt-factories
+    # via pytest-shell-utilities
+    # via pytest-skip-markers
+    # via pytest-system-statistics
 decorator==5.1.1
     # via ipython
+distlib==0.3.8
+    # via virtualenv
+distro==1.9.0
+    # via pytest-skip-markers
 executing==2.0.1
     # via stack-data
+filelock==3.13.4
+    # via virtualenv
 iniconfig==2.0.0
     # via pytest
 ipython==8.23.0
@@ -21,6 +32,8 @@ jedi==0.19.1
     # via ipython
 matplotlib-inline==0.1.7
     # via ipython
+msgpack==1.0.8
+    # via pytest-salt-factories
 packaging==24.0
     # via pytest
 parso==0.8.4
@@ -28,10 +41,16 @@ parso==0.8.4
 pexpect==4.9.0
     # via ipython
     # via saltstack-age
+platformdirs==4.2.1
+    # via virtualenv
 pluggy==1.5.0
     # via pytest
 prompt-toolkit==3.0.43
     # via ipython
+psutil==5.9.8
+    # via pytest-salt-factories
+    # via pytest-shell-utilities
+    # via pytest-system-statistics
 ptyprocess==0.7.0
     # via pexpect
 pure-eval==0.2.2
@@ -39,6 +58,27 @@ pure-eval==0.2.2
 pygments==2.17.2
     # via ipython
 pytest==8.1.2
+    # via pytest-helpers-namespace
+    # via pytest-salt-factories
+    # via pytest-shell-utilities
+    # via pytest-skip-markers
+    # via pytest-system-statistics
+pytest-helpers-namespace==2021.12.29
+    # via pytest-salt-factories
+    # via pytest-shell-utilities
+pytest-salt-factories==1.0.1
+pytest-shell-utilities==1.9.0
+    # via pytest-salt-factories
+pytest-skip-markers==1.5.1
+    # via pytest-salt-factories
+    # via pytest-shell-utilities
+    # via pytest-system-statistics
+pytest-system-statistics==1.0.2
+    # via pytest-salt-factories
+pyyaml==6.0.1
+    # via pytest-salt-factories
+pyzmq==26.0.2
+    # via pytest-salt-factories
 six==1.16.0
     # via asttokens
 stack-data==0.6.3
@@ -46,5 +86,9 @@ stack-data==0.6.3
 traitlets==5.14.3
     # via ipython
     # via matplotlib-inline
+typing-extensions==4.11.0
+    # via pytest-system-statistics
+virtualenv==20.26.0
+    # via pytest-salt-factories
 wcwidth==0.2.13
     # via prompt-toolkit
