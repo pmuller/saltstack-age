@@ -22,6 +22,7 @@ attrs==23.2.0
     # via pytest-system-statistics
 autocommand==2.2.2
     # via jaraco-text
+basedpyright==1.10.4
 certifi==2024.2.2
     # via requests
 cffi==1.16.0
@@ -98,6 +99,8 @@ msgpack==1.0.8
 multidict==6.0.5
     # via aiohttp
     # via yarl
+nodejs-bin==18.4.0a4
+    # via basedpyright
 packaging==24.0
     # via pytest
     # via salt
