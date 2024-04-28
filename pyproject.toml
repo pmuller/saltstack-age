@@ -36,5 +36,77 @@ allow-direct-references = true
 [tool.ruff]
 builtins = ["__salt__"]
 
+[tool.ruff.lint]
+select = [
+    "F",     # [F]lake8
+    "E",     # pycodestyle (E)rrors
+    "W",     # pycodestyle (W)rrors
+    "C90",   # mccabe
+    "I",     # [I]sort
+    "N",     # pep8-[N]aming
+    "D",     # py[D]ocstyle
+    "UP",    # py[UP]grade
+    "YTT",   # flake8-2020
+    "ANN",   # flake8-[ANN]otations
+    "ASYNC", # flake8-async
+    "S",     # flake8-bandit
+    "BLE",   # flake8-blind-except
+    "FBT",   # flake8-boolean-trap
+    "B",     # flake8-bugbear
+    "A",     # flake8-builtins
+    "COM",   # flake8-commas
+    "C4",    # flake8-comprehensions
+    "DTZ",   # flake8-datetimez
+    "T10",   # flake8-debugger
+    "EXE",   # flake8-executable
+    "ISC",   # flake8-implicit-str-concat
+    "G",     # flake8-logging-format
+    "PIE",   # flake8-pie
+    "T20",   # flake8-print
+    "PYI",   # flake8-pyi
+    "PT",    # flake8-pytest-style
+    "Q",     # flake8-quotes
+    "RSE",   # flake8-raise
+    "RET",   # flake8-return
+    "SLF",   # flake8-self
+    "SLOT",  # flake8-slots
+    "SIM",   # flake8-simplify
+    "TCH",   # flake8-type-checking
+    "ARG",   # flake8-unused-arguments
+    "PTH",   # flake8-use-pathlib
+    "ERA",   # eradicate
+    "PD",    # pandas-vet
+    "PL",    # Pylint
+    "TRY",   # tryceratops
+    "FLY",   # flynt
+    "PERF",  # Perflint
+    "LOG",   # flake8-logging
+    "RUF",   # Ruff-specific rules
+]
+ignore = [
+    # Avoid enforcing line-length violations, just trust "ruff format"
+    "E501",
+    # Avoid conflict with the formatter
+    "COM812", # missing-trailing-comma
+    "ISC001", # single-line-implicit-string-concatenation
+    # Can live without the following checks
+    "D100",   # Missing docstring in public module
+    "D101",   # Missing docstring in public class
+    "D102",   # Missing docstring in public method
+    "D103",   # Missing docstring in public function
+    "D104",   # Missing docstring in public package
+    "D106",   # Missing docstring in public nested class
+    "D107",   # Missing docstring in `__init__`
+    "D203",   # one-blank-line-before-class
+    "D212",   # multi-line-summary-first-line
+    "ANN101", # Missing type annotation for `self` in method
+    "ANN102", # Missing type annotation for `cls` in classmethod
+    "ANN204", # Missing return type annotation for special method `__init__`
+    "TRY002", # Create your own exception
+    "TRY003", # Avoid specifying long messages outside the exception class
+    "S603",   # `subprocess` call: check for execution of untrusted input
+    "S607",   # Starting a process with a partial executable path
+]
+
 [tool.basedpyright]
 reportAny = false
