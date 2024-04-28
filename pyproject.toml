@@ -31,3 +31,6 @@ packages = ["src/saltstack_age"]
 
 [tool.hatch.metadata]
 allow-direct-references = true
+
+[tool.ruff]
+builtins = ["__salt__"]
