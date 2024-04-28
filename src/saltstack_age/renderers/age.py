@@ -1,13 +1,15 @@
 from base64 import b64decode
 import pyrage
+import pyrage.x25519
+import pyrage.passphrase
 import os
 from pathlib import Path
 from salt.exceptions import SaltRenderError
 from collections import OrderedDict
-import typing
+from typing import Any
 
 
-Data = OrderedDict[str, typing.Any]
+Data = OrderedDict[str, Any]
 
 
 def _is_encrypted_value(value: str) -> bool:
@@ -42,7 +44,7 @@ def _decrypt(encrypted_string: str) -> str:
     ciphertext = b64decode(encrypted_string)
 
     if "config.get" in __salt__:
-        identity_file = __salt__["config.get"]("age_identity_file")
+        identity_file: str | None = __salt__["config.get"]("age_identity_file")
         if identity_file:
             return decrypt_with_identity(ciphertext, identity_file)
 
