@@ -16,15 +16,6 @@ def _is_encrypted_value(value: str) -> bool:
     return value.startswith("-----BEGIN AGE ENCRYPTED FILE-----")
 
 
-def _get_passphrase_from_environment() -> str:
-    passphrase = os.environ.get("AGE_PASSPHRASE")
-
-    if not passphrase:
-        raise RuntimeError("AGE_PASSPHRASE is not defined")
-
-    return passphrase
-
-
 def decrypt_with_passphrase(ciphertext: bytes, passphrase: str) -> str:
     return pyrage.passphrase.decrypt(ciphertext, passphrase).decode()
 
@@ -49,8 +40,7 @@ def _decrypt(encrypted_string: str) -> str:
             return decrypt_with_identity(ciphertext, identity_file)
 
     if "AGE_PASSPHRASE" in os.environ:
-        passphrase = _get_passphrase_from_environment()
-        return decrypt_with_passphrase(ciphertext, passphrase)
+        return decrypt_with_passphrase(ciphertext, os.environ["AGE_PASSPHRASE"])
 
     raise SaltRenderError("No age identity file or passphrase configured")
 
