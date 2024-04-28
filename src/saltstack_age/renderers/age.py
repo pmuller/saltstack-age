@@ -3,11 +3,11 @@ import pyrage
 import os
 from pathlib import Path
 from salt.exceptions import SaltRenderError
-import collections
+from collections import OrderedDict
 import typing
 
 
-Data = typing.OrderedDict[str, typing.Any]
+Data = OrderedDict[str, typing.Any]
 
 
 def _is_encrypted_value(value: str) -> bool:
@@ -59,7 +59,7 @@ def render(
     _sls: str = "",
     **_kwargs: None,
 ) -> Data:
-    return collections.OrderedDict(
+    return OrderedDict(
         (key, _decrypt(value) if _is_encrypted_value(value) else value)
         for key, value in data.items()
     )
