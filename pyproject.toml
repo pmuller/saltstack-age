@@ -17,6 +17,7 @@ dev-dependencies = [
     "pytest-salt-factories>=1.0.1",
     "salt>=3007.0",
     "basedpyright>=1.10.4",
+    "ruff>=0.4.2",
 ]
 
 [project.entry-points."salt.loader"]
