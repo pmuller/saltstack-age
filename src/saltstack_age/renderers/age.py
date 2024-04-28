@@ -1,8 +1,8 @@
+from base64 import b64decode
+import pyrage
 import os
 from pathlib import Path
 from salt.exceptions import SaltRenderError
-import subprocess
-import pexpect
 import collections
 import typing
 
@@ -23,37 +23,32 @@ def _get_passphrase_from_environment() -> str:
     return passphrase
 
 
-def decrypt_with_passphrase(encrypted_value: str, passphrase: str) -> str:
-    process = pexpect.spawn("age", ["-d"], encoding="ascii")
-    process.send(encrypted_value)
-    process.expect("Enter passphrase: ")
-    process.send(f"{passphrase}\n")
-    # XXX: WTF is that?
-    process.expect("\r\r\n\x1b\\[F\x1b\\[K")
-    return process.read()
+def decrypt_with_passphrase(ciphertext: bytes, passphrase: str) -> str:
+    return pyrage.passphrase.decrypt(ciphertext, passphrase).decode()
 
 
-def decrypt_with_identity(identity_file: str, encrypted_value: str) -> str:
-    if not Path(identity_file).is_file():
+def decrypt_with_identity(ciphertext: bytes, identity_file: str) -> str:
+    identity_path = Path(identity_file)
+
+    if not identity_path.is_file():
         raise SaltRenderError(f"age_identity_file not found: {identity_file}")
 
-    return subprocess.run(
-        ["age", "-d", "-i", identity_file],
-        input=encrypted_value.encode(),
-        check=True,
-        stdout=subprocess.PIPE,
-    ).stdout.decode()
+    identity = pyrage.x25519.Identity.from_str(identity_path.read_text())
+
+    return pyrage.decrypt(ciphertext, [identity]).decode()
 
 
-def _decrypt(encrypted_value: str) -> str:
+def _decrypt(encrypted_string: str) -> str:
+    ciphertext = b64decode(encrypted_string)
+
     if "config.get" in __salt__:
         identity_file = __salt__["config.get"]("age_identity_file")
         if identity_file:
-            return decrypt_with_identity(identity_file, encrypted_value)
+            return decrypt_with_identity(ciphertext, identity_file)
 
     if "AGE_PASSPHRASE" in os.environ:
         passphrase = _get_passphrase_from_environment()
-        return decrypt_with_passphrase(encrypted_value, passphrase)
+        return decrypt_with_passphrase(ciphertext, passphrase)
 
     raise SaltRenderError("No age identity file or passphrase configured")
 

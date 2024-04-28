@@ -8,7 +8,5 @@
 #   with-sources: false
 
 -e file:.
-pexpect==4.9.0
+pyrage==1.1.2
     # via saltstack-age
-ptyprocess==0.7.0
-    # via pexpect

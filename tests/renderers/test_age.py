@@ -1,4 +1,5 @@
 from pathlib import Path
+from base64 import b64decode
 
 from saltstack_age.renderers.age import decrypt_with_identity, decrypt_with_passphrase
 
@@ -10,16 +11,10 @@ def test_decrypt_with_identity(tmp_path: Path):
     )
     assert (
         decrypt_with_identity(
+            b64decode(
+                "YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSBkWHZYRkU2bjc4M2VtaElEZGxudmkwNW95ZHlNZy84K3U4MmlXejIzRkJNCktPbkhLU0h4VXBFYTZUUDlzbFFzdUx5R1VyaDZhd2doNkE2QnFpUmV6OFEKLS0tIFd3Wlg1UWQ3NHEwKyt6bTZkdmp3bWRCTTZkakppTFovbkhBcDhFeGdJazgKnf48DyGjBm2wOpM11YZ0+1btASDDSdgqXiM4SXXEMHhylmW8G9pSoTtovj0aZu9QVA=="
+            ),
             str(key_path),
-            """\
------BEGIN AGE ENCRYPTED FILE-----
-YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSB4andCbjFKK296Z2ljTTNH
-QjZINHl2a1ZFdC9ZdThPa0hGQkhCL0FXWlZBCmdTejdpbVU1aStGQWJkUVZNTU9Z
-RGs5YXQvV2dmcGVBY0JGZldrWXF5YUUKLS0tIHpZcEVLTW9kU1JVL1ZjYVVKQ2Zk
-akRidThzbTZPQ2tvZXJEU0FsNWs5MWMKfEetwDxBHPKyPPBKguZSZWn8oypX5bHQ
-FCqMT8V+RoIgPPV4ZZPuVa9RN/hmv8dj6Q==
------END AGE ENCRYPTED FILE-----
-""",
         )
         == "test-secret-value"
     )
@@ -28,15 +23,9 @@ FCqMT8V+RoIgPPV4ZZPuVa9RN/hmv8dj6Q==
 def test_decrypt_with_passphrase():
     assert (
         decrypt_with_passphrase(
-            """\
------BEGIN AGE ENCRYPTED FILE-----
-YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IHNjcnlwdCBaWTlOK0FveWUwRHZWYXRV
-TGxTaVdnIDE4CmorKzNSQ0cwY1FabnVSbmJod3hocms4OVhWdTBESHI2Y0lialZV
-Y1V4OUEKLS0tIEp0N0RJZmRzb2VoazVSWDhLVWtkZy9YQWtLUjQrL0FmRUsyeDNp
-VXc3YncKy/Ylwkz/73tMNMUj//0NZaCGS/dvKQryGTMF2LtehXmaGuiWGM4gUT56
-pR/S70++FQ==
------END AGE ENCRYPTED FILE-----
-""",
+            b64decode(
+                "YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IHNjcnlwdCB6SVZXRVlTQnFzdWh0VWp2YkFGV2pnIDE4CnNXUEZLdi81WjdmS0JSaFoxRG9md3E1RXMwMUhqVDd2d2lHUFhPUHFvT1EKLS0tIGlEKzg0Qjc4cWM3WEVwOStqZUJNQUc4SXJUSXA0QzNtM21vQUZmSit6ZncKf+ubsIChW5+VqkQMrnaMPbaf4jOHAVRQXU6xWrlGSmoWnq4GuqJzX79fluc4bvPwqQ=="
+            ),
             "secret-passphrase",
         )
         == "test-secret-value"

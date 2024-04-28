@@ -4,7 +4,7 @@ version = "0.1.0"
 description = "age renderer for Saltstack"
 authors = [{ name = "Philippe Muller" }]
 dependencies = [
-    "pexpect>=4.9.0",
+    "pyrage>=1.1.2",
 ]
 readme = "README.md"
 requires-python = ">= 3.8"
