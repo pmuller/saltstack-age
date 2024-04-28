@@ -1,13 +1,13 @@
-from base64 import b64decode
-import pyrage
-import pyrage.x25519
-import pyrage.passphrase
 import os
-from pathlib import Path
-from salt.exceptions import SaltRenderError
+from base64 import b64decode
 from collections import OrderedDict
+from pathlib import Path
 from typing import Any
 
+import pyrage
+import pyrage.passphrase
+import pyrage.x25519
+from salt.exceptions import SaltRenderError
 
 Data = OrderedDict[str, Any]
 
