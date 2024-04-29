@@ -31,7 +31,12 @@ age-(?P<type>passphrase|identity)
 )
 
 
-def _decrypt_with_identity(ciphertext: bytes, identity_file: str) -> str:
+def _decrypt_with_identity(ciphertext: bytes) -> str:
+    identity_file: str | None = __salt__["config.get"]("age_identity_file")
+
+    if not identity_file:
+        raise SaltRenderError("age_identity_file is not defined")
+
     identity_path = Path(identity_file)
 
     if not identity_path.is_file():
@@ -60,12 +65,7 @@ def _decrypt(secure_value: str) -> str:
 
     if type_ == "identity":
         if "config.get" in __salt__:
-            identity_file: str | None = __salt__["config.get"]("age_identity_file")
-
-            if identity_file:
-                return _decrypt_with_identity(ciphertext, identity_file)
-
-            raise SaltRenderError("age_identity_file is not defined")
+            return _decrypt_with_identity(ciphertext)
 
         # Not sure how/when that happens...
         raise RuntimeError('__salt__["config.get"] is not available')
