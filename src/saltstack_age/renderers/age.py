@@ -31,10 +31,6 @@ age-(?P<type>passphrase|identity)
 )
 
 
-def _decrypt_with_passphrase(ciphertext: bytes, passphrase: str) -> str:
-    return pyrage.passphrase.decrypt(ciphertext, passphrase).decode()
-
-
 def _decrypt_with_identity(ciphertext: bytes, identity_file: str) -> str:
     identity_path = Path(identity_file)
 
@@ -76,7 +72,10 @@ def _decrypt(secure_value: str) -> str:
 
     if type_ == "passphrase":
         if "AGE_PASSPHRASE" in os.environ:
-            return _decrypt_with_passphrase(ciphertext, os.environ["AGE_PASSPHRASE"])
+            return pyrage.passphrase.decrypt(
+                ciphertext,
+                os.environ["AGE_PASSPHRASE"],
+            ).decode()
 
         raise SaltRenderError("The AGE_PASSPHRASE environment variable is not defined")
 
