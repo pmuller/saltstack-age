@@ -31,11 +31,11 @@ age-(?P<type>passphrase|identity)
 )
 
 
-def decrypt_with_passphrase(ciphertext: bytes, passphrase: str) -> str:
+def _decrypt_with_passphrase(ciphertext: bytes, passphrase: str) -> str:
     return pyrage.passphrase.decrypt(ciphertext, passphrase).decode()
 
 
-def decrypt_with_identity(ciphertext: bytes, identity_file: str) -> str:
+def _decrypt_with_identity(ciphertext: bytes, identity_file: str) -> str:
     identity_path = Path(identity_file)
 
     if not identity_path.is_file():
@@ -67,7 +67,7 @@ def _decrypt(secure_value: str) -> str:
             identity_file: str | None = __salt__["config.get"]("age_identity_file")
 
             if identity_file:
-                return decrypt_with_identity(ciphertext, identity_file)
+                return _decrypt_with_identity(ciphertext, identity_file)
 
             raise SaltRenderError("age_identity_file is not defined")
 
@@ -76,7 +76,7 @@ def _decrypt(secure_value: str) -> str:
 
     if type_ == "passphrase":
         if "AGE_PASSPHRASE" in os.environ:
-            return decrypt_with_passphrase(ciphertext, os.environ["AGE_PASSPHRASE"])
+            return _decrypt_with_passphrase(ciphertext, os.environ["AGE_PASSPHRASE"])
 
         raise SaltRenderError("The AGE_PASSPHRASE environment variable is not defined")
 
