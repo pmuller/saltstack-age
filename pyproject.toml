@@ -20,6 +20,9 @@ dev-dependencies = [
     "ruff>=0.4.2",
 ]
 
+[project.scripts]
+saltstack-age = "saltstack_age.cli:main"
+
 [project.entry-points."salt.loader"]
 saltstack-age = "saltstack_age"
 
@@ -118,3 +121,4 @@ ignore = [
 
 [tool.basedpyright]
 reportAny = false
+reportImplicitStringConcatenation = false
