@@ -42,16 +42,7 @@ def _decrypt_with_identity(ciphertext: bytes) -> str:
     if not identity_path.is_file():
         raise SaltRenderError(f"age_identity_file not found: {identity_file}")
 
-    identity_string = re.sub(
-        r"^#.*\n?",
-        "",
-        identity_path.read_text(),
-        flags=re.MULTILINE,
-    ).rstrip("\n")
-    identity = pyrage.x25519.Identity.from_str(identity_string)
-
-    return pyrage.decrypt(ciphertext, [identity]).decode()
-
+    return pyrage.decrypt(ciphertext, [read_identity_file(identity_path)]).decode()
 
 def _decrypt(secure_value: str) -> str:
     match = RE_SECURE_VALUE.match(secure_value)
