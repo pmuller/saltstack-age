@@ -1,4 +1,5 @@
 import os
+import re
 from base64 import b64decode
 from collections import OrderedDict
 from pathlib import Path
@@ -26,7 +27,13 @@ def decrypt_with_identity(ciphertext: bytes, identity_file: str) -> str:
     if not identity_path.is_file():
         raise SaltRenderError(f"age_identity_file not found: {identity_file}")
 
-    identity = pyrage.x25519.Identity.from_str(identity_path.read_text())
+    identity_string = re.sub(
+        r"^#.*\n?",
+        "",
+        identity_path.read_text(),
+        flags=re.MULTILINE,
+    ).rstrip("\n")
+    identity = pyrage.x25519.Identity.from_str(identity_string)
 
     return pyrage.decrypt(ciphertext, [identity]).decode()
 
