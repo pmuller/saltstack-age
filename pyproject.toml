@@ -108,5 +108,14 @@ ignore = [
     "S607",   # Starting a process with a partial executable path
 ]
 
+[tool.ruff.lint.per-file-ignores]
+"typings/**.py" = [
+    "ARG001", # Unused function argument
+]
+"tests/**.py" = [
+    "ANN201", # Missing return type annotation for public function
+    "S101",   # Use of `assert` detected
+]
+
 [tool.basedpyright]
 reportAny = false
