@@ -6,8 +6,6 @@ from pathlib import Path
 from typing import Any
 
 import pyrage
-import pyrage.passphrase
-import pyrage.x25519
 from salt.exceptions import SaltRenderError
 
 Data = OrderedDict[str, Any]
