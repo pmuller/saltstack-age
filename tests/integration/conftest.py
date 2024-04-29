@@ -12,9 +12,9 @@ EXAMPLE_PATH = ROOT / "example"
 
 
 @pytest.fixture(scope="session")
-def salt_factories_config():
+def salt_factories_config() -> dict[str, str | int | bool | None]:
     coverage_rc_path = os.environ.get("COVERAGE_PROCESS_START")
-    coverage_db_path = ROOT / ".coverage" if coverage_rc_path else None
+    coverage_db_path = str(ROOT / ".coverage") if coverage_rc_path else None
     return {
         "code_dir": str(EXAMPLE_PATH),
         "coverage_rc_path": coverage_rc_path,

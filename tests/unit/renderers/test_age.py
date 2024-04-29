@@ -1,13 +1,14 @@
 from collections import OrderedDict
 from pathlib import Path
-from typing import Callable
+from types import ModuleType
+from typing import Any, Callable
 
 import pytest
 from saltstack_age.renderers import age
 
 
 @pytest.fixture()
-def age_identity_path(tmp_path: Path):
+def age_identity_path(tmp_path: Path) -> Path:
     key_path = tmp_path / "key"
     _ = key_path.write_text(
         """\
@@ -20,8 +21,8 @@ AGE-SECRET-KEY-1CG6803VTTPMA4WKAU0XGK6FU72NQ4JCJUJUJLAC9R5V3CMCJKN2SL9GLCD
 
 
 @pytest.fixture()
-def config_get(age_identity_path: Path):
-    def _config_get(key: str):
+def config_get(age_identity_path: Path) -> Callable[[str], str]:
+    def _config_get(key: str) -> str:
         assert key == "age_identity_file"
         return str(age_identity_path)
 
@@ -29,7 +30,7 @@ def config_get(age_identity_path: Path):
 
 
 @pytest.fixture()
-def configure_loader_modules(config_get: Callable[[str], str]):
+def configure_loader_modules(config_get: Callable[[str], str]) -> dict[ModuleType, Any]:
     return {
         age: {
             "__salt__": {
@@ -39,7 +40,7 @@ def configure_loader_modules(config_get: Callable[[str], str]):
     }
 
 
-def test_render__identity():
+def test_render__identity() -> None:
     assert age.render(
         OrderedDict(
             (
@@ -58,7 +59,7 @@ def test_render__identity():
     )
 
 
-def test_render__passphrase(monkeypatch: pytest.MonkeyPatch):
+def test_render__passphrase(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setenv("AGE_PASSPHRASE", "secret-passphrase")
     assert age.render(
         OrderedDict(

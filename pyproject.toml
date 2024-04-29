@@ -113,7 +113,6 @@ ignore = [
     "ARG001", # Unused function argument
 ]
 "tests/**.py" = [
-    "ANN201", # Missing return type annotation for public function
     "S101",   # Use of `assert` detected
 ]
 
