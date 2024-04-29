@@ -1,7 +1,9 @@
-/tmp/test-public:
+{% set prefix = salt.pillar.get('prefix') %}
+
+{{ prefix }}/test-public:
   file.managed:
     - contents_pillar: public
 
-/tmp/test-private:
+{{ prefix }}/test-private:
   file.managed:
     - contents_pillar: private
