@@ -13,8 +13,24 @@ from salt.exceptions import SaltRenderError
 Data = OrderedDict[str, Any]
 
 
-def _is_encrypted_value(value: str) -> bool:
-    return value.startswith("-----BEGIN AGE ENCRYPTED FILE-----")
+RE_SECURE_VALUE = re.compile(
+    r"""
+ENC\[
+age-(?P<type>passphrase|identity)
+,
+(?P<base64CipherText>
+    (?:[A-Za-z0-9+/]{4})*
+    (?:
+        [A-Za-z0-9+/]{2}==
+        |
+        [A-Za-z0-9+/]{3}=
+    )?
+)
+\]
+\s*
+""",
+    re.VERBOSE,
+)
 
 
 def decrypt_with_passphrase(ciphertext: bytes, passphrase: str) -> str:
@@ -38,18 +54,36 @@ def decrypt_with_identity(ciphertext: bytes, identity_file: str) -> str:
     return pyrage.decrypt(ciphertext, [identity]).decode()
 
 
-def _decrypt(encrypted_string: str) -> str:
-    ciphertext = b64decode(encrypted_string)
+def _decrypt(secure_value: str) -> str:
+    match = RE_SECURE_VALUE.match(secure_value)
 
-    if "config.get" in __salt__:
-        identity_file: str | None = __salt__["config.get"]("age_identity_file")
-        if identity_file:
-            return decrypt_with_identity(ciphertext, identity_file)
+    if not match:
+        # Should _never_ happen as we match against the regex in render()
+        raise SaltRenderError(f"Invalid age secure value: {secure_value}")
 
-    if "AGE_PASSPHRASE" in os.environ:
-        return decrypt_with_passphrase(ciphertext, os.environ["AGE_PASSPHRASE"])
+    type_, base64_ciphertext = match.groups()
+    ciphertext = b64decode(base64_ciphertext)
 
-    raise SaltRenderError("No age identity file or passphrase configured")
+    if type_ == "identity":
+        if "config.get" in __salt__:
+            identity_file: str | None = __salt__["config.get"]("age_identity_file")
+
+            if identity_file:
+                return decrypt_with_identity(ciphertext, identity_file)
+
+            raise SaltRenderError("age_identity_file is not defined")
+
+        # Not sure how/when that happens...
+        raise RuntimeError('__salt__["config.get"] is not available')
+
+    if type_ == "passphrase":
+        if "AGE_PASSPHRASE" in os.environ:
+            return decrypt_with_passphrase(ciphertext, os.environ["AGE_PASSPHRASE"])
+
+        raise SaltRenderError("The AGE_PASSPHRASE environment variable is not defined")
+
+    # This can only happen if we change the regex without updating this function
+    raise SaltRenderError(f"Invalid age encryption type: {type_}")
 
 
 def render(
@@ -59,6 +93,6 @@ def render(
     **_kwargs: None,
 ) -> Data:
     return OrderedDict(
-        (key, _decrypt(value) if _is_encrypted_value(value) else value)
+        (key, _decrypt(value) if RE_SECURE_VALUE.match(value) else value)
         for key, value in data.items()
     )
