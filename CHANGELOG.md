@@ -1,6 +1,6 @@
 # saltstack-age change log
 
-## Unreleased
+## 0.4.0
 
 * feat: allow configuration of an identity string using the `AGE_IDENTITY`
   environment variable and the `age_identity` configuration directive
