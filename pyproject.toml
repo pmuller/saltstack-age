@@ -1,6 +1,6 @@
 [project]
 name = "saltstack-age"
-version = "0.2.1"
+version = "0.2.3"
 description = "age renderer for Saltstack"
 authors = [{ name = "Philippe Muller" }]
 dependencies = [
@@ -8,6 +8,25 @@ dependencies = [
 ]
 readme = "README.md"
 requires-python = ">= 3.8"
+license = {text = "MIT License"}
+keywords = ["saltstack", "salt", "pillar", "age", "encryption", "security"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: System Administrators",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Security",
+    "Topic :: System :: Systems Administration",
+]
+
+[project.urls]
+Homepage = "https://github.com/pmuller/saltstack-age"
+Repository = "https://github.com/pmuller/saltstack-age.git"
+Issues = "https://github.com/pmuller/saltstack-age/issues"
+Changelog = "https://github.com/pmuller/saltstack-age/blob/main/CHANGELOG.md"
 
 [tool.rye]
 managed = true
