@@ -11,6 +11,12 @@ from saltstack_age.secure_value import (
 
 Data = OrderedDict[str, Any]
 
+__virtualname__ = "age"
+
+
+def __virtual__() -> str:  # noqa: N807
+    return __virtualname__
+
 
 def _decrypt(string: str) -> str:
     secure_value = parse_secure_value(string)
