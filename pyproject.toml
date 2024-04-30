@@ -1,6 +1,6 @@
 [project]
 name = "saltstack-age"
-version = "0.1.0"
+version = "0.1.1"
 description = "age renderer for Saltstack"
 authors = [{ name = "Philippe Muller" }]
 dependencies = [
