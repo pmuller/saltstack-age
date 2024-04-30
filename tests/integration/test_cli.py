@@ -1,4 +1,3 @@
-import logging
 from collections.abc import Sequence
 from pathlib import Path
 
@@ -13,13 +12,11 @@ from saltstack_age.secure_value import (
 )
 
 
-def test_encrypt__passphrase(caplog: pytest.LogCaptureFixture) -> None:
-    # Only keep INFO log records
-    caplog.set_level(logging.INFO)
+def test_encrypt__passphrase(capsys: pytest.CaptureFixture[str]) -> None:
     # Run the CLI tool
     main(["-P", "woah that is so secret", "enc", "another secret"])
     # Ensure we get a passphrase secure value string
-    secure_value_string = caplog.record_tuples[0][2]
+    secure_value_string = capsys.readouterr().out
     secure_value = parse_secure_value(secure_value_string)
     assert isinstance(secure_value, PassphraseSecureValue)
     # Ensure we can decrypt it
@@ -27,15 +24,13 @@ def test_encrypt__passphrase(caplog: pytest.LogCaptureFixture) -> None:
 
 
 def test_encrypt__single_recipient(
-    caplog: pytest.LogCaptureFixture,
+    capsys: pytest.CaptureFixture[str],
     example_age_key: str,
 ) -> None:
-    # Only keep INFO log records
-    caplog.set_level(logging.INFO)
     # Run the CLI tool
     main(["-i", example_age_key, "enc", "foo"])
     # Ensure we get an identity secure value string
-    secure_value_string = caplog.record_tuples[0][2]
+    secure_value_string = capsys.readouterr().out
     secure_value = parse_secure_value(secure_value_string)
     assert isinstance(secure_value, IdentitySecureValue)
     # Ensure we can decrypt it using the same identity
@@ -43,10 +38,9 @@ def test_encrypt__single_recipient(
 
 
 def test_encrypt__multiple_recipients(
-    caplog: pytest.LogCaptureFixture, tmp_path: Path
+    capsys: pytest.CaptureFixture[str],
+    tmp_path: Path,
 ) -> None:
-    # Only keep INFO log records
-    caplog.set_level(logging.INFO)
     # Generate identities
     identity1 = pyrage.x25519.Identity.generate()
     identity1_path = tmp_path / "identity1"
@@ -66,7 +60,7 @@ def test_encrypt__multiple_recipients(
         ]
     )
     # Ensure we get an identity secure value string
-    secure_value_string = caplog.record_tuples[0][2]
+    secure_value_string = capsys.readouterr().out
     secure_value = parse_secure_value(secure_value_string)
     assert isinstance(secure_value, IdentitySecureValue)
     # Ensure we can decrypt it using all the recipient identities
@@ -114,15 +108,13 @@ def test_decrypt(
     environment: None | dict[str, str],
     args: Sequence[str],
     result: str,
-    caplog: pytest.LogCaptureFixture,
+    capsys: pytest.CaptureFixture[str],
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     # Setup environment variables
     for name, value in (environment or {}).items():
         monkeypatch.setenv(name, value)
-    # Only keep INFO log records
-    caplog.set_level(logging.INFO)
     # Run the CLI tool
     main(args)
     # Ensure we get the expected result
-    assert caplog.record_tuples == [("saltstack_age.cli", logging.INFO, result)]
+    assert capsys.readouterr().out == result
