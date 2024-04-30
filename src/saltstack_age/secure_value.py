@@ -3,14 +3,10 @@ import re
 from base64 import b64decode
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Literal
 
 import pyrage
 
 from saltstack_age.identities import read_identity_file
-
-EncryptionType = Literal["passphrase", "identity"]
-
 
 RE_SECURE_VALUE = re.compile(
     r"""
