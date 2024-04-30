@@ -1,0 +1,39 @@
+name: Release
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+
+  pypi-publish:
+    name: PyPI Publish
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: eifinger/setup-rye@v2
+        with:
+          enable-cache: true
+      - run: rye build --clean --wheel
+      - run: rye publish --skip-existing --token ${{ secrets.SALTSTACK_AGE_PYPI_TOKEN }} --yes
+
+  tag:
+    name: Create Git tag
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: |
+          git config --global user.name 'Github workflow'
+          git config --global user.email 'pmuller@users.noreply.github.com'
+
+          VERSION=$(grep -oP '^version = "\K(\d+\.\d+\.\d+)' pyproject.toml)
+
+          if git rev-parse --verify $VERSION >/dev/null 2>&1
+          then
+            echo "Tag $VERSION already exists"
+            exit
+          fi
+
+          git tag $VERSION -a -m "Automatically created"
+          git push origin $VERSION

@@ -5,10 +5,11 @@ from base64 import b64encode
 from collections.abc import Sequence
 from getpass import getpass
 from pathlib import Path
+from typing import Literal
 
 import pyrage
 
-from saltstack_age.identities import read_identity_file
+from saltstack_age.identities import get_identity_from_environment, read_identity_file
 from saltstack_age.passphrase import get_passphrase_from_environment
 from saltstack_age.secure_value import (
     IdentitySecureValue,
@@ -18,11 +19,11 @@ from saltstack_age.secure_value import (
 LOGGER = logging.getLogger(__name__)
 
 
-def normalize_identity(identity: str) -> Path:
+def normalize_identity(identity: str) -> pyrage.x25519.Identity:
     path = Path(identity)
 
     if path.is_file():
-        return path
+        return read_identity_file(path)
 
     raise ArgumentTypeError(f"Identity file does not exist: {identity}")
 
@@ -30,9 +31,9 @@ def normalize_identity(identity: str) -> Path:
 def parse_cli_arguments(args: Sequence[str] | None = None) -> Namespace:
     parser = ArgumentParser(
         description="Encrypt or decrypt secrets for use with saltstack-age renderer.",
-        epilog="When no passphrase or identity is provided, the tool defaults to "
-        "passphrase-based encryption and attempts to retrieve the passphrase from "
-        "the AGE_PASSPHRASE environment variable.",
+        epilog="When no passphrase or identity is provided, the tool tries to "
+        "retrieve a passphrase from the AGE_PASSPHRASE environment variable, "
+        "or an identity using the AGE_IDENTITY_FILE variable.",
     )
 
     type_parameters = parser.add_mutually_exclusive_group()
@@ -100,18 +101,52 @@ def get_passphrase(arguments: Namespace) -> str:
     return passphrase
 
 
+def get_identities(arguments: Namespace) -> list[pyrage.x25519.Identity]:
+    identities: list[pyrage.x25519.Identity] = arguments.identities or []
+
+    # When no identity is provided on the CLI, try to get one from the environment
+    if not identities:
+        identity_from_environment = get_identity_from_environment()
+        if identity_from_environment:
+            LOGGER.debug("Found identity file in environment")
+            identities.append(identity_from_environment)
+
+    return identities
+
+
 def get_value(arguments: Namespace) -> str:
     return arguments.value or sys.stdin.read()
+
+
+def determine_encryption_type(
+    arguments: Namespace,
+) -> Literal["identity", "passphrase"]:
+    if arguments.passphrase or arguments.passphrase_from_stdin:
+        return "passphrase"
+    if arguments.identities:
+        return "identity"
+
+    # We want the tool to be easy to use, so there is a lot of guesswork.
+    # But we also want to avoid inconsistent behaviors.
+    # So in case no passphrase or identity is passed to CLI,
+    # but both are configured in the environment, we raise an error.
+    identities = get_identities(arguments)
+    passphrase = get_passphrase(arguments)
+    if identities and passphrase:
+        LOGGER.critical("Error: Found both passphrase and identity file in environment")
+        raise SystemExit(-1)
+
+    if identities:
+        return "identity"
+
+    return "passphrase"
 
 
 def encrypt(arguments: Namespace) -> None:
     value = get_value(arguments).encode()
 
-    if arguments.identities:
-        recipients = [
-            read_identity_file(identity).to_public()
-            for identity in arguments.identities
-        ]
+    if determine_encryption_type(arguments) == "identity":
+        recipients = [identity.to_public() for identity in get_identities(arguments)]
         ciphertext = pyrage.encrypt(value, recipients)
         LOGGER.info("ENC[age-identity,%s]", b64encode(ciphertext).decode())
 
@@ -124,15 +159,19 @@ def decrypt(arguments: Namespace) -> None:
     secure_value = parse_secure_value(get_value(arguments))
 
     if isinstance(secure_value, IdentitySecureValue):
-        if arguments.identities is None:
+        identities = get_identities(arguments)
+
+        if not identities:
             LOGGER.critical("An identity is required to decrypt this value")
             raise SystemExit(-1)
-        if len(arguments.identities) != 1:
+
+        if len(identities) != 1:
             LOGGER.critical(
                 "A single identity must be passed to decrypt this value (got %d)",
                 len(arguments.identities),
             )
             raise SystemExit(-1)
+
         LOGGER.info("%s", secure_value.decrypt(arguments.identities[0]))
 
     else:  # isinstance(secure_value, PassphraseSecureValue)

@@ -5,6 +5,7 @@ from pathlib import Path
 import pyrage
 import pytest
 from saltstack_age.cli import main
+from saltstack_age.identities import read_identity_file
 from saltstack_age.secure_value import (
     IdentitySecureValue,
     PassphraseSecureValue,
@@ -25,17 +26,20 @@ def test_encrypt__passphrase(caplog: pytest.LogCaptureFixture) -> None:
     assert secure_value.decrypt("woah that is so secret") == "another secret"
 
 
-def test_encrypt__single_recipient(caplog: pytest.LogCaptureFixture) -> None:
+def test_encrypt__single_recipient(
+    caplog: pytest.LogCaptureFixture,
+    example_age_key: str,
+) -> None:
     # Only keep INFO log records
     caplog.set_level(logging.INFO)
     # Run the CLI tool
-    main(["-i", "example/config/age.key", "enc", "foo"])
+    main(["-i", example_age_key, "enc", "foo"])
     # Ensure we get an identity secure value string
     secure_value_string = caplog.record_tuples[0][2]
     secure_value = parse_secure_value(secure_value_string)
     assert isinstance(secure_value, IdentitySecureValue)
     # Ensure we can decrypt it using the same identity
-    assert secure_value.decrypt("example/config/age.key") == "foo"
+    assert secure_value.decrypt(read_identity_file(example_age_key)) == "foo"
 
 
 def test_encrypt__multiple_recipients(
@@ -67,7 +71,7 @@ def test_encrypt__multiple_recipients(
     assert isinstance(secure_value, IdentitySecureValue)
     # Ensure we can decrypt it using all the recipient identities
     for identity_path in (identity1_path, identity2_path):
-        assert secure_value.decrypt(identity_path) == "foo"
+        assert secure_value.decrypt(read_identity_file(identity_path)) == "foo"
 
 
 @pytest.mark.parametrize(
