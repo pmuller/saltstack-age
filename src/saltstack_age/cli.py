@@ -69,7 +69,7 @@ def parse_cli_arguments(args: Sequence[str] | None = None) -> Namespace:
     return parser.parse_args(args)
 
 
-def configure_logging(*, debug: bool):
+def configure_logging(*, debug: bool) -> None:
     level = logging.DEBUG if debug else logging.INFO
     format_ = "%(levelname)s:%(name)s:%(message)s" if debug else "%(message)s"
     logging.basicConfig(level=level, format=format_, style="%")
@@ -90,7 +90,7 @@ def get_value(arguments: Namespace) -> str:
     return arguments.value or sys.stdin.read()
 
 
-def decrypt(arguments: Namespace):
+def decrypt(arguments: Namespace) -> None:
     secure_value = parse_secure_value(get_value(arguments))
 
     if isinstance(secure_value, IdentitySecureValue):

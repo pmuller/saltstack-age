@@ -42,7 +42,7 @@ class SecureValue:
 
 
 class PassphraseSecureValue(SecureValue):
-    def decrypt(self, passphrase: str | None = None):
+    def decrypt(self, passphrase: str | None = None) -> str:
         if passphrase is None:
             passphrase = os.environ.get("AGE_PASSPHRASE")
             if passphrase is None:
@@ -51,7 +51,7 @@ class PassphraseSecureValue(SecureValue):
 
 
 class IdentitySecureValue(SecureValue):
-    def decrypt(self, identity: Path | str):
+    def decrypt(self, identity: Path | str) -> str:
         if isinstance(identity, str):
             identity = Path(identity)
         if not identity.is_file():
