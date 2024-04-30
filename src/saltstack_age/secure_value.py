@@ -1,6 +1,7 @@
 import re
 from base64 import b64decode
 from dataclasses import dataclass
+from typing import Any
 
 import pyrage
 
@@ -24,8 +25,8 @@ age-(?P<type>passphrase|identity)
 )
 
 
-def is_secure_value(string: str) -> bool:
-    return bool(RE_SECURE_VALUE.match(string))
+def is_secure_value(value: Any) -> bool:  # noqa: ANN401
+    return bool(RE_SECURE_VALUE.match(value)) if isinstance(value, str) else False
 
 
 @dataclass

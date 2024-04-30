@@ -144,15 +144,15 @@ def determine_encryption_type(
 
 def encrypt(arguments: Namespace) -> None:
     value = get_value(arguments).encode()
+    type_ = determine_encryption_type(arguments)
 
-    if determine_encryption_type(arguments) == "identity":
+    if type_ == "identity":
         recipients = [identity.to_public() for identity in get_identities(arguments)]
         ciphertext = pyrage.encrypt(value, recipients)
-        LOGGER.info("ENC[age-identity,%s]", b64encode(ciphertext).decode())
-
     else:
         ciphertext = pyrage.passphrase.encrypt(value, get_passphrase(arguments))
-        LOGGER.info("ENC[age-passphrase,%s]", b64encode(ciphertext).decode())
+
+    _ = sys.stdout.write(f"ENC[age-{type_},{b64encode(ciphertext).decode()}]\n")
 
 
 def decrypt(arguments: Namespace) -> None:
@@ -172,10 +172,10 @@ def decrypt(arguments: Namespace) -> None:
             )
             raise SystemExit(-1)
 
-        LOGGER.info("%s", secure_value.decrypt(arguments.identities[0]))
+        _ = sys.stdout.write(secure_value.decrypt(arguments.identities[0]))
 
     else:  # isinstance(secure_value, PassphraseSecureValue)
-        LOGGER.info("%s", secure_value.decrypt(get_passphrase(arguments)))
+        _ = sys.stdout.write(secure_value.decrypt(get_passphrase(arguments)))
 
 
 def main(cli_args: Sequence[str] | None = None) -> None:

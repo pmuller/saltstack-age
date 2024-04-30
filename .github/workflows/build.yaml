@@ -15,3 +15,4 @@ jobs:
       - run: rye fmt -- --check
       - run: rye check
       - run: rye run basedpyright
+      - run: rye run pytest -vvv
