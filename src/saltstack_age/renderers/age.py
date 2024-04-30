@@ -1,7 +1,7 @@
 from collections import OrderedDict
 from importlib import import_module
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 
 import pyrage
 from salt.exceptions import SaltRenderError
@@ -73,13 +73,18 @@ def _decrypt(string: str) -> str:
     return secure_value.decrypt(_get_passphrase())
 
 
+def _render_value(value: Any) -> Any:  # noqa: ANN401
+    if is_secure_value(value):
+        return _decrypt(value)
+    if isinstance(value, OrderedDict):
+        return render(cast(Data, value))
+    return value
+
+
 def render(
     data: Data,
     _saltenv: str = "base",
     _sls: str = "",
     **_kwargs: None,
 ) -> Data:
-    return OrderedDict(
-        (key, _decrypt(value) if is_secure_value(value) else value)
-        for key, value in data.items()
-    )
+    return OrderedDict((key, _render_value(value)) for key, value in data.items())
