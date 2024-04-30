@@ -33,7 +33,12 @@ def __virtual__() -> str | tuple[bool, str]:  # noqa: N807
 
 
 def _get_identity() -> pyrage.x25519.Identity:
-    # 1. Try to get identity file from Salt configuration
+    # Try to get identity string from Salt configuration
+    identity_string: str | None = __salt__["config.get"]("age_identity")
+    if identity_string:
+        return pyrage.x25519.Identity.from_str(identity_string.strip())
+
+    # Try to get identity file from Salt configuration
     identity_file_string: str | None = __salt__["config.get"]("age_identity_file")
     if identity_file_string:
         identity_file_path = Path(identity_file_string)
@@ -45,7 +50,7 @@ def _get_identity() -> pyrage.x25519.Identity:
 
         return read_identity_file(identity_file_path)
 
-    # 2. Try to get identity from the environment
+    # Try to get identity from the environment
     identity = get_identity_from_environment()
     if identity:
         return identity

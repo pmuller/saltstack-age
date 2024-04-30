@@ -8,9 +8,12 @@ from tests.integration.conftest import MINION_CONFIG
 
 
 @pytest.fixture()
-def minion(salt_factories: FactoriesManager, example_age_key: str) -> SaltMinion:
+def minion(
+    salt_factories: FactoriesManager,
+    example_age_key_path_str: str,
+) -> SaltMinion:
     overrides = MINION_CONFIG.copy()
-    overrides["age_identity_file"] = example_age_key
+    overrides["age_identity_file"] = example_age_key_path_str
     return salt_factories.salt_minion_daemon(
         random_string("minion-"),
         overrides=overrides,

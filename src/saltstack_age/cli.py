@@ -172,7 +172,7 @@ def decrypt(arguments: Namespace) -> None:
             )
             raise SystemExit(-1)
 
-        _ = sys.stdout.write(secure_value.decrypt(arguments.identities[0]))
+        _ = sys.stdout.write(secure_value.decrypt(identities[0]))
 
     else:  # isinstance(secure_value, PassphraseSecureValue)
         _ = sys.stdout.write(secure_value.decrypt(get_passphrase(arguments)))
