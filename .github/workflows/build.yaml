@@ -1,0 +1,17 @@
+name: Build
+
+on: push
+
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: eifinger/setup-rye@v2
+        with:
+          enable-cache: true
+      - run: rye sync
+      - run: rye fmt -- --check
+      - run: rye check
+      - run: rye run basedpyright
