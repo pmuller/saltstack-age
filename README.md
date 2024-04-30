@@ -43,6 +43,7 @@ daemon configuration file, or in the daemon environment.
 | Type         | Configuration directive | Environment variable | Expected value               |
 | ------------ | ----------------------- | -------------------- | ---------------------------- |
 | identity     | `age_identity_file`     | `AGE_IDENTITY_FILE`  | Path of an age identity file |
+| identity     | `age_identity`          | `AGE_IDENTITY`       | An age identity string       |
 | passphrase   | `age_passphrase`        | `AGE_PASSPHRASE`     | An age passphrase            |
 
 You can check this [example configuration](./example/config/minion).

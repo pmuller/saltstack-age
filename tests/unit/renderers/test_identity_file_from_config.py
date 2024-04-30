@@ -8,16 +8,20 @@ from tests.unit.renderers import _test_identity
 
 
 @pytest.fixture()
-def config_get(example_age_key: str) -> Callable[[str], str]:
-    def _config_get(key: str) -> str:
+def config_get(example_age_key_path_str: str) -> Callable[[str], str | None]:
+    def _config_get(key: str) -> str | None:
+        if key == "age_identity":
+            return None
         assert key == "age_identity_file"
-        return example_age_key
+        return example_age_key_path_str
 
     return _config_get
 
 
 @pytest.fixture()
-def configure_loader_modules(config_get: Callable[[str], str]) -> dict[ModuleType, Any]:
+def configure_loader_modules(
+    config_get: Callable[[str], str | None],
+) -> dict[ModuleType, Any]:
     return {age: {"__salt__": {"config.get": config_get}}}
 
 
