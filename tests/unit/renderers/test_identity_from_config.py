@@ -8,10 +8,10 @@ from tests.unit.renderers import _test_identity
 
 
 @pytest.fixture()
-def config_get(age_identity_path: str) -> Callable[[str], str]:
+def config_get(example_age_key: str) -> Callable[[str], str]:
     def _config_get(key: str) -> str:
         assert key == "age_identity_file"
-        return age_identity_path
+        return example_age_key
 
     return _config_get
 

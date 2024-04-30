@@ -1,12 +1,11 @@
 import os
-from pathlib import Path
 
 import pytest
 from saltfactories.cli.call import SaltCall
 from saltfactories.daemons.minion import SaltMinion
 
-ROOT = Path(__file__).parent.parent.parent
-EXAMPLE_PATH = ROOT / "example"
+from tests.conftest import EXAMPLE_PATH, ROOT
+
 MINION_CONFIG = {
     "file_client": "local",
     "master_type": "disable",
@@ -31,8 +30,3 @@ def salt_factories_config() -> dict[str, str | int | bool | None]:
 @pytest.fixture()
 def salt_call_cli(minion: SaltMinion) -> SaltCall:
     return minion.salt_call_cli()
-
-
-@pytest.fixture()
-def example_age_key() -> str:
-    return str(EXAMPLE_PATH / "config" / "age.key")
