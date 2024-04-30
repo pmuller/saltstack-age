@@ -1,11 +1,8 @@
 import re
 from base64 import b64decode
 from dataclasses import dataclass
-from pathlib import Path
 
 import pyrage
-
-from saltstack_age.identities import read_identity_file
 
 RE_SECURE_VALUE = re.compile(
     r"""
@@ -42,12 +39,8 @@ class PassphraseSecureValue(SecureValue):
 
 
 class IdentitySecureValue(SecureValue):
-    def decrypt(self, identity: Path | str) -> str:
-        if isinstance(identity, str):
-            identity = Path(identity)
-        if not identity.is_file():
-            raise FileNotFoundError(f"Identity file does not exist: {identity}")
-        return pyrage.decrypt(self.ciphertext, [read_identity_file(identity)]).decode()
+    def decrypt(self, identity: pyrage.x25519.Identity) -> str:
+        return pyrage.decrypt(self.ciphertext, [identity]).decode()
 
 
 def parse_secure_value(string: str) -> PassphraseSecureValue | IdentitySecureValue:
