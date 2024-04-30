@@ -5,6 +5,9 @@ on:
     branches:
       - main
 
+permissions:
+  contents: write
+
 jobs:
 
   pypi-publish:
@@ -37,3 +40,5 @@ jobs:
 
           git tag $VERSION -a -m "Automatically created"
           git push origin $VERSION
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
