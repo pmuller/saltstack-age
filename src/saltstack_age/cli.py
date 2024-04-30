@@ -71,8 +71,8 @@ def parse_cli_arguments(args: Sequence[str] | None = None) -> Namespace:
 
 def configure_logging(*, debug: bool):
     level = logging.DEBUG if debug else logging.INFO
-    format = "%(levelname)s:%(name)s:%(message)s" if debug else "%(message)s"
-    logging.basicConfig(level=level, format=format, style="%")
+    format_ = "%(levelname)s:%(name)s:%(message)s" if debug else "%(message)s"
+    logging.basicConfig(level=level, format=format_, style="%")
 
 
 def get_passphrase(arguments: Namespace) -> str | None:
