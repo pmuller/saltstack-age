@@ -3,6 +3,7 @@ import sys
 from argparse import ArgumentParser, ArgumentTypeError, Namespace
 from getpass import getpass
 from pathlib import Path
+from typing import Sequence
 
 from saltstack_age.secure_value import IdentitySecureValue, parse_secure_value
 
@@ -18,7 +19,7 @@ def normalize_identity(identity: str) -> Path:
     raise ArgumentTypeError(f"Identity file does not exist: {identity}")
 
 
-def parse_cli_arguments() -> Namespace:
+def parse_cli_arguments(args: Sequence[str] | None = None) -> Namespace:
     parser = ArgumentParser(
         description="Encrypt or decrypt secrets for use with saltstack-age renderer.",
         epilog="When no passphrase or identity is provided, the tool defaults to "
@@ -66,7 +67,7 @@ def parse_cli_arguments() -> Namespace:
         "Will be read from the standard input if not provided.",
     )
 
-    return parser.parse_args()
+    return parser.parse_args(args)
 
 
 def configure_logging(*, debug: bool):
@@ -86,8 +87,8 @@ def get_passphrase(arguments: Namespace) -> str | None:
     return passphrase
 
 
-def main() -> None:
-    arguments = parse_cli_arguments()
+def main(cli_args: Sequence[str] | None = None) -> None:
+    arguments = parse_cli_arguments(cli_args)
     configure_logging(debug=arguments.debug)
     LOGGER.debug("CLI arguments: %r", arguments)
     value = arguments.value or sys.stdin.read()
