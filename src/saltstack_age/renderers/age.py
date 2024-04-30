@@ -4,6 +4,7 @@ from typing import Any
 
 from salt.exceptions import SaltRenderError
 
+from saltstack_age.passphrase import get_passphrase_from_environment
 from saltstack_age.secure_value import (
     IdentitySecureValue,
     is_secure_value,
@@ -39,7 +40,15 @@ def _decrypt(string: str) -> str:
 
         return secure_value.decrypt(identity_file)
 
-    return secure_value.decrypt()
+    # secure_value is a PassphraseSecureValue
+    passphrase: str | None = (
+        __salt__["config.get"]("age_passphrase") or get_passphrase_from_environment()
+    )
+
+    if passphrase is None:
+        raise SaltRenderError("No age passphrase found in config or environment")
+
+    return secure_value.decrypt(passphrase)
 
 
 def render(

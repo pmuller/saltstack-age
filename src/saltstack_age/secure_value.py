@@ -1,4 +1,3 @@
-import os
 import re
 from base64 import b64decode
 from dataclasses import dataclass
@@ -37,16 +36,8 @@ class SecureValue:
     ciphertext: bytes
 
 
-def get_passphrase_from_environment() -> str | None:
-    return os.environ.get("AGE_PASSPHRASE")
-
-
 class PassphraseSecureValue(SecureValue):
-    def decrypt(self, passphrase: str | None = None) -> str:
-        if passphrase is None:
-            passphrase = get_passphrase_from_environment()
-            if passphrase is None:
-                raise ValueError("Failed to decrypt: No passphrase provided")
+    def decrypt(self, passphrase: str) -> str:
         return pyrage.passphrase.decrypt(self.ciphertext, passphrase).decode()
 
 
