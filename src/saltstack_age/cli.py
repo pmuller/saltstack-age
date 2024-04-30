@@ -35,8 +35,7 @@ def parse_cli_arguments(args: Sequence[str] | None = None) -> Namespace:
         dest="identities",
         action="append",
         help="The identity file to use. "
-        "Can be repeated to encrypt the data for multiple identities or "
-        "to try to decrypt it with multiple identities.",
+        "Can be repeated to encrypt the data for multiple identities.",
     )
     _ = type_parameters.add_argument(
         "-p",
@@ -87,21 +86,36 @@ def get_passphrase(arguments: Namespace) -> str | None:
     return passphrase
 
 
+def get_value(arguments: Namespace) -> str:
+    return arguments.value or sys.stdin.read()
+
+
+def decrypt(arguments: Namespace):
+    secure_value = parse_secure_value(get_value(arguments))
+
+    if isinstance(secure_value, IdentitySecureValue):
+        if arguments.identities is None:
+            LOGGER.critical("An identity is required to decrypt this value")
+            raise SystemExit(-1)
+        if len(arguments.identities) != 1:
+            LOGGER.critical(
+                "A single identity must be passed to decrypt this value (got %d)",
+                len(arguments.identities),
+            )
+            raise SystemExit(-1)
+        LOGGER.info("%s", secure_value.decrypt(arguments.identities[0]))
+
+    else:  # isinstance(secure_value, PassphraseSecureValue)
+        LOGGER.info("%s", secure_value.decrypt(get_passphrase(arguments)))
+
+
 def main(cli_args: Sequence[str] | None = None) -> None:
     arguments = parse_cli_arguments(cli_args)
     configure_logging(debug=arguments.debug)
     LOGGER.debug("CLI arguments: %r", arguments)
-    value = arguments.value or sys.stdin.read()
 
     if arguments.mode.startswith("enc"):
         # TODO: implement encryption
         raise NotImplementedError
     else:
-        secure_value = parse_secure_value(value)
-        # TODO: implement support for multiple identities
-        decrypted_value = (
-            secure_value.decrypt(arguments.identities[0])
-            if isinstance(secure_value, IdentitySecureValue)
-            else secure_value.decrypt(get_passphrase(arguments))
-        )
-        LOGGER.info("%s", decrypted_value)
+        decrypt(arguments)
