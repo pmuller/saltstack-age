@@ -1,4 +1,5 @@
 from collections import OrderedDict
+from importlib import import_module
 from typing import Any
 
 from salt.exceptions import SaltRenderError
@@ -18,6 +19,12 @@ def __virtual__() -> str | tuple[bool, str]:  # noqa: N807
     if "config.get" not in __salt__:
         # Not sure how/when that happens?
         return (False, '"config.get" is not available')
+
+    try:
+        _ = import_module("pyrage")
+    except ModuleNotFoundError:
+        return (False, "pyrage is not installed")
+
     return __virtualname__
 
 
