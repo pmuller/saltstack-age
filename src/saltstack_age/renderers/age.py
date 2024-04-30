@@ -1,9 +1,12 @@
 from collections import OrderedDict
 from importlib import import_module
+from pathlib import Path
 from typing import Any
 
+import pyrage
 from salt.exceptions import SaltRenderError
 
+from saltstack_age.identities import get_identity_from_environment, read_identity_file
 from saltstack_age.passphrase import get_passphrase_from_environment
 from saltstack_age.secure_value import (
     IdentitySecureValue,
@@ -29,18 +32,28 @@ def __virtual__() -> str | tuple[bool, str]:  # noqa: N807
     return __virtualname__
 
 
-def _decrypt(string: str) -> str:
-    secure_value = parse_secure_value(string)
+def _get_identity() -> pyrage.x25519.Identity:
+    # 1. Try to get identity file from Salt configuration
+    identity_file_string: str | None = __salt__["config.get"]("age_identity_file")
+    if identity_file_string:
+        identity_file_path = Path(identity_file_string)
 
-    if isinstance(secure_value, IdentitySecureValue):
-        identity_file: str | None = __salt__["config.get"]("age_identity_file")
+        if not identity_file_path.is_file():
+            raise SaltRenderError(
+                f"age_identity file does not exist: {identity_file_string}"
+            )
 
-        if not identity_file:
-            raise SaltRenderError("age_identity_file is not defined")
+        return read_identity_file(identity_file_path)
 
-        return secure_value.decrypt(identity_file)
+    # 2. Try to get identity from the environment
+    identity = get_identity_from_environment()
+    if identity:
+        return identity
 
-    # secure_value is a PassphraseSecureValue
+    raise SaltRenderError("No age identity file found in config or environment")
+
+
+def _get_passphrase() -> str:
     passphrase: str | None = (
         __salt__["config.get"]("age_passphrase") or get_passphrase_from_environment()
     )
@@ -48,7 +61,16 @@ def _decrypt(string: str) -> str:
     if passphrase is None:
         raise SaltRenderError("No age passphrase found in config or environment")
 
-    return secure_value.decrypt(passphrase)
+    return passphrase
+
+
+def _decrypt(string: str) -> str:
+    secure_value = parse_secure_value(string)
+
+    if isinstance(secure_value, IdentitySecureValue):
+        return secure_value.decrypt(_get_identity())
+
+    return secure_value.decrypt(_get_passphrase())
 
 
 def render(

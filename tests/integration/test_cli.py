@@ -5,6 +5,7 @@ from pathlib import Path
 import pyrage
 import pytest
 from saltstack_age.cli import main
+from saltstack_age.identities import read_identity_file
 from saltstack_age.secure_value import (
     IdentitySecureValue,
     PassphraseSecureValue,
@@ -35,7 +36,7 @@ def test_encrypt__single_recipient(caplog: pytest.LogCaptureFixture) -> None:
     secure_value = parse_secure_value(secure_value_string)
     assert isinstance(secure_value, IdentitySecureValue)
     # Ensure we can decrypt it using the same identity
-    assert secure_value.decrypt("example/config/age.key") == "foo"
+    assert secure_value.decrypt(read_identity_file("example/config/age.key")) == "foo"
 
 
 def test_encrypt__multiple_recipients(
@@ -67,7 +68,7 @@ def test_encrypt__multiple_recipients(
     assert isinstance(secure_value, IdentitySecureValue)
     # Ensure we can decrypt it using all the recipient identities
     for identity_path in (identity1_path, identity2_path):
-        assert secure_value.decrypt(identity_path) == "foo"
+        assert secure_value.decrypt(read_identity_file(identity_path)) == "foo"
 
 
 @pytest.mark.parametrize(
