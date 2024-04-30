@@ -6,7 +6,6 @@ from pathlib import Path
 import pyrage
 
 from saltstack_age.identities import read_identity_file
-from saltstack_age.passphrase import get_passphrase_from_environment
 
 RE_SECURE_VALUE = re.compile(
     r"""
@@ -38,11 +37,7 @@ class SecureValue:
 
 
 class PassphraseSecureValue(SecureValue):
-    def decrypt(self, passphrase: str | None = None) -> str:
-        if passphrase is None:
-            passphrase = get_passphrase_from_environment()
-            if passphrase is None:
-                raise ValueError("Failed to decrypt: No passphrase provided")
+    def decrypt(self, passphrase: str) -> str:
         return pyrage.passphrase.decrypt(self.ciphertext, passphrase).decode()
 
 

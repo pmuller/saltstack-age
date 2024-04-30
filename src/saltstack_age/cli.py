@@ -83,7 +83,7 @@ def configure_logging(*, debug: bool) -> None:
     logging.basicConfig(level=level, format=format_, style="%")
 
 
-def get_passphrase(arguments: Namespace) -> str | None:
+def get_passphrase(arguments: Namespace) -> str:
     passphrase: str | None = None
 
     if arguments.passphrase_from_stdin:
@@ -92,6 +92,10 @@ def get_passphrase(arguments: Namespace) -> str | None:
         passphrase = arguments.passphrase
     else:
         passphrase = get_passphrase_from_environment()
+
+    if passphrase is None:
+        LOGGER.critical("No age passphrase provided")
+        raise SystemExit(-1)
 
     return passphrase
 
@@ -112,13 +116,7 @@ def encrypt(arguments: Namespace) -> None:
         LOGGER.info("ENC[age-identity,%s]", b64encode(ciphertext).decode())
 
     else:
-        passphrase = get_passphrase(arguments)
-
-        if passphrase is None:
-            LOGGER.critical("Failed to encrypt: no passphrase provided")
-            raise SystemExit(-1)
-
-        ciphertext = pyrage.passphrase.encrypt(value, passphrase)
+        ciphertext = pyrage.passphrase.encrypt(value, get_passphrase(arguments))
         LOGGER.info("ENC[age-passphrase,%s]", b64encode(ciphertext).decode())
 
 
