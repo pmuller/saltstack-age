@@ -1,8 +1,73 @@
 import logging
 from collections.abc import Sequence
+from pathlib import Path
 
+import pyrage
 import pytest
 from saltstack_age.cli import main
+from saltstack_age.secure_value import (
+    IdentitySecureValue,
+    PassphraseSecureValue,
+    parse_secure_value,
+)
+
+
+def test_encrypt__passphrase(caplog: pytest.LogCaptureFixture) -> None:
+    # Only keep INFO log records
+    caplog.set_level(logging.INFO)
+    # Run the CLI tool
+    main(["-P", "woah that is so secret", "enc", "another secret"])
+    # Ensure we get a passphrase secure value string
+    secure_value_string = caplog.record_tuples[0][2]
+    secure_value = parse_secure_value(secure_value_string)
+    assert isinstance(secure_value, PassphraseSecureValue)
+    # Ensure we can decrypt it
+    assert secure_value.decrypt("woah that is so secret") == "another secret"
+
+
+def test_encrypt__single_recipient(caplog: pytest.LogCaptureFixture) -> None:
+    # Only keep INFO log records
+    caplog.set_level(logging.INFO)
+    # Run the CLI tool
+    main(["-i", "example/config/age.key", "enc", "foo"])
+    # Ensure we get an identity secure value string
+    secure_value_string = caplog.record_tuples[0][2]
+    secure_value = parse_secure_value(secure_value_string)
+    assert isinstance(secure_value, IdentitySecureValue)
+    # Ensure we can decrypt it using the same identity
+    assert secure_value.decrypt("example/config/age.key") == "foo"
+
+
+def test_encrypt__multiple_recipients(
+    caplog: pytest.LogCaptureFixture, tmp_path: Path
+) -> None:
+    # Only keep INFO log records
+    caplog.set_level(logging.INFO)
+    # Generate identities
+    identity1 = pyrage.x25519.Identity.generate()
+    identity1_path = tmp_path / "identity1"
+    _ = identity1_path.write_text(str(identity1))
+    identity2 = pyrage.x25519.Identity.generate()
+    identity2_path = tmp_path / "identity2"
+    _ = identity2_path.write_text(str(identity2))
+    # Run the CLI tool
+    main(
+        [
+            "-i",
+            str(identity1_path),
+            "--identity",
+            str(identity2_path),
+            "encrypt",
+            "foo",
+        ]
+    )
+    # Ensure we get an identity secure value string
+    secure_value_string = caplog.record_tuples[0][2]
+    secure_value = parse_secure_value(secure_value_string)
+    assert isinstance(secure_value, IdentitySecureValue)
+    # Ensure we can decrypt it using all the recipient identities
+    for identity_path in (identity1_path, identity2_path):
+        assert secure_value.decrypt(identity_path) == "foo"
 
 
 @pytest.mark.parametrize(
@@ -41,7 +106,7 @@ from saltstack_age.cli import main
         ),
     ],
 )
-def test(
+def test_decrypt(
     environment: None | dict[str, str],
     args: Sequence[str],
     result: str,

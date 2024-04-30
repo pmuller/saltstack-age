@@ -37,10 +37,14 @@ class SecureValue:
     ciphertext: bytes
 
 
+def get_passphrase_from_environment() -> str | None:
+    return os.environ.get("AGE_PASSPHRASE")
+
+
 class PassphraseSecureValue(SecureValue):
     def decrypt(self, passphrase: str | None = None) -> str:
         if passphrase is None:
-            passphrase = os.environ.get("AGE_PASSPHRASE")
+            passphrase = get_passphrase_from_environment()
             if passphrase is None:
                 raise ValueError("Failed to decrypt: No passphrase provided")
         return pyrage.passphrase.decrypt(self.ciphertext, passphrase).decode()

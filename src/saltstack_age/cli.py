@@ -1,11 +1,19 @@
 import logging
 import sys
 from argparse import ArgumentParser, ArgumentTypeError, Namespace
+from base64 import b64encode
 from collections.abc import Sequence
 from getpass import getpass
 from pathlib import Path
 
-from saltstack_age.secure_value import IdentitySecureValue, parse_secure_value
+import pyrage
+
+from saltstack_age.identities import read_identity_file
+from saltstack_age.secure_value import (
+    IdentitySecureValue,
+    get_passphrase_from_environment,
+    parse_secure_value,
+)
 
 LOGGER = logging.getLogger(__name__)
 
@@ -82,12 +90,36 @@ def get_passphrase(arguments: Namespace) -> str | None:
         passphrase = getpass("Passphrase: ")
     elif arguments.passphrase:
         passphrase = arguments.passphrase
+    else:
+        passphrase = get_passphrase_from_environment()
 
     return passphrase
 
 
 def get_value(arguments: Namespace) -> str:
     return arguments.value or sys.stdin.read()
+
+
+def encrypt(arguments: Namespace) -> None:
+    value = get_value(arguments).encode()
+
+    if arguments.identities:
+        recipients = [
+            read_identity_file(identity).to_public()
+            for identity in arguments.identities
+        ]
+        ciphertext = pyrage.encrypt(value, recipients)
+        LOGGER.info("ENC[age-identity,%s]", b64encode(ciphertext).decode())
+
+    else:
+        passphrase = get_passphrase(arguments)
+
+        if passphrase is None:
+            LOGGER.critical("Failed to encrypt: no passphrase provided")
+            raise SystemExit(-1)
+
+        ciphertext = pyrage.passphrase.encrypt(value, passphrase)
+        LOGGER.info("ENC[age-passphrase,%s]", b64encode(ciphertext).decode())
 
 
 def decrypt(arguments: Namespace) -> None:
@@ -113,9 +145,4 @@ def main(cli_args: Sequence[str] | None = None) -> None:
     arguments = parse_cli_arguments(cli_args)
     configure_logging(debug=arguments.debug)
     LOGGER.debug("CLI arguments: %r", arguments)
-
-    if arguments.mode.startswith("enc"):
-        # TODO: implement encryption
-        raise NotImplementedError
-    else:
-        decrypt(arguments)
+    encrypt(arguments) if arguments.mode.startswith("enc") else decrypt(arguments)
