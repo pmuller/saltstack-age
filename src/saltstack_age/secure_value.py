@@ -1,4 +1,3 @@
-import os
 import re
 from base64 import b64decode
 from dataclasses import dataclass
@@ -7,6 +6,7 @@ from pathlib import Path
 import pyrage
 
 from saltstack_age.identities import read_identity_file
+from saltstack_age.passphrase import get_passphrase_from_environment
 
 RE_SECURE_VALUE = re.compile(
     r"""
@@ -35,10 +35,6 @@ def is_secure_value(string: str) -> bool:
 @dataclass
 class SecureValue:
     ciphertext: bytes
-
-
-def get_passphrase_from_environment() -> str | None:
-    return os.environ.get("AGE_PASSPHRASE")
 
 
 class PassphraseSecureValue(SecureValue):

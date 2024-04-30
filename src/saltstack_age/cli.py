@@ -9,9 +9,9 @@ from pathlib import Path
 import pyrage
 
 from saltstack_age.identities import read_identity_file
+from saltstack_age.passphrase import get_passphrase_from_environment
 from saltstack_age.secure_value import (
     IdentitySecureValue,
-    get_passphrase_from_environment,
     parse_secure_value,
 )
 
