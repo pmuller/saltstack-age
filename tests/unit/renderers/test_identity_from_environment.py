@@ -12,6 +12,11 @@ def configure_loader_modules() -> dict[ModuleType, Any]:
     return {age: {"__salt__": {"config.get": lambda _key: None}}}
 
 
-def test(monkeypatch: pytest.MonkeyPatch, example_age_key: str) -> None:
-    monkeypatch.setenv("AGE_IDENTITY_FILE", example_age_key)
+def test_file(monkeypatch: pytest.MonkeyPatch, example_age_key_path_str: str) -> None:
+    monkeypatch.setenv("AGE_IDENTITY_FILE", example_age_key_path_str)
+    _test_identity.test()
+
+
+def test_string(monkeypatch: pytest.MonkeyPatch, example_age_key_str: str) -> None:
+    monkeypatch.setenv("AGE_IDENTITY", example_age_key_str)
     _test_identity.test()

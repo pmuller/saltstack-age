@@ -25,16 +25,16 @@ def test_encrypt__passphrase(capsys: pytest.CaptureFixture[str]) -> None:
 
 def test_encrypt__single_recipient(
     capsys: pytest.CaptureFixture[str],
-    example_age_key: str,
+    example_age_key_path_str: str,
 ) -> None:
     # Run the CLI tool
-    main(["-i", example_age_key, "enc", "foo"])
+    main(["-i", example_age_key_path_str, "enc", "foo"])
     # Ensure we get an identity secure value string
     secure_value_string = capsys.readouterr().out
     secure_value = parse_secure_value(secure_value_string)
     assert isinstance(secure_value, IdentitySecureValue)
     # Ensure we can decrypt it using the same identity
-    assert secure_value.decrypt(read_identity_file(example_age_key)) == "foo"
+    assert secure_value.decrypt(read_identity_file(example_age_key_path_str)) == "foo"
 
 
 def test_encrypt__multiple_recipients(
@@ -71,12 +71,30 @@ def test_encrypt__multiple_recipients(
 @pytest.mark.parametrize(
     ("environment", "args", "result"),
     [
-        # Test decryption using a single identity file
+        # Test decryption by using an identity file passed as CLI argument
         (
             None,
             (
                 "-i",
                 "example/config/age.key",
+                "dec",
+                "ENC[age-identity,YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSBkWHZYRkU2bjc4M2VtaElEZGxudmkwNW95ZHlNZy84K3U4MmlXejIzRkJNCktPbkhLU0h4VXBFYTZUUDlzbFFzdUx5R1VyaDZhd2doNkE2QnFpUmV6OFEKLS0tIFd3Wlg1UWQ3NHEwKyt6bTZkdmp3bWRCTTZkakppTFovbkhBcDhFeGdJazgKnf48DyGjBm2wOpM11YZ0+1btASDDSdgqXiM4SXXEMHhylmW8G9pSoTtovj0aZu9QVA==]",
+            ),
+            "test-secret-value",
+        ),
+        # Test decryption by using an identity file passed through environment
+        (
+            {"AGE_IDENTITY_FILE": "example/config/age.key"},
+            (
+                "dec",
+                "ENC[age-identity,YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSBkWHZYRkU2bjc4M2VtaElEZGxudmkwNW95ZHlNZy84K3U4MmlXejIzRkJNCktPbkhLU0h4VXBFYTZUUDlzbFFzdUx5R1VyaDZhd2doNkE2QnFpUmV6OFEKLS0tIFd3Wlg1UWQ3NHEwKyt6bTZkdmp3bWRCTTZkakppTFovbkhBcDhFeGdJazgKnf48DyGjBm2wOpM11YZ0+1btASDDSdgqXiM4SXXEMHhylmW8G9pSoTtovj0aZu9QVA==]",
+            ),
+            "test-secret-value",
+        ),
+        # Test decryption by using an identity string passed through environment
+        (
+            {"AGE_IDENTITY": str(read_identity_file("example/config/age.key"))},
+            (
                 "dec",
                 "ENC[age-identity,YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IFgyNTUxOSBkWHZYRkU2bjc4M2VtaElEZGxudmkwNW95ZHlNZy84K3U4MmlXejIzRkJNCktPbkhLU0h4VXBFYTZUUDlzbFFzdUx5R1VyaDZhd2doNkE2QnFpUmV6OFEKLS0tIFd3Wlg1UWQ3NHEwKyt6bTZkdmp3bWRCTTZkakppTFovbkhBcDhFeGdJazgKnf48DyGjBm2wOpM11YZ0+1btASDDSdgqXiM4SXXEMHhylmW8G9pSoTtovj0aZu9QVA==]",
             ),

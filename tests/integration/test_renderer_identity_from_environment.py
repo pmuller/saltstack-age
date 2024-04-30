@@ -11,9 +11,9 @@ from tests.integration.conftest import MINION_CONFIG
 def minion(
     salt_factories: FactoriesManager,
     monkeypatch: pytest.MonkeyPatch,
-    example_age_key: str,
+    example_age_key_path_str: str,
 ) -> SaltMinion:
-    monkeypatch.setenv("AGE_IDENTITY_FILE", example_age_key)
+    monkeypatch.setenv("AGE_IDENTITY_FILE", example_age_key_path_str)
     return salt_factories.salt_minion_daemon(
         random_string("minion-"),
         overrides=MINION_CONFIG,
