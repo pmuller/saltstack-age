@@ -1,9 +1,9 @@
 import logging
 import sys
 from argparse import ArgumentParser, ArgumentTypeError, Namespace
+from collections.abc import Sequence
 from getpass import getpass
 from pathlib import Path
-from typing import Sequence
 
 from saltstack_age.secure_value import IdentitySecureValue, parse_secure_value
 
