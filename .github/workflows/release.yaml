@@ -18,7 +18,7 @@ jobs:
       - uses: eifinger/setup-rye@v2
         with:
           enable-cache: true
-      - run: rye build --clean --wheel
+      - run: rye build --clean
       - run: rye publish --skip-existing --token ${{ secrets.SALTSTACK_AGE_PYPI_TOKEN }} --yes
 
   tag:
