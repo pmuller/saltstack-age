@@ -28,6 +28,13 @@ def normalize_identity(identity: str) -> pyrage.x25519.Identity:
     raise ArgumentTypeError(f"Identity file does not exist: {identity}")
 
 
+def normalize_recipient(recipient: str) -> pyrage.x25519.Recipient:
+    try:
+        return pyrage.x25519.Recipient.from_str(recipient)
+    except Exception as error:
+        raise ArgumentTypeError(f"Invalid age recipient: {recipient}") from error
+
+
 def parse_cli_arguments(args: Sequence[str] | None = None) -> Namespace:
     parser = ArgumentParser(
         description="Encrypt or decrypt secrets for use with saltstack-age renderer.",
@@ -57,6 +64,18 @@ def parse_cli_arguments(args: Sequence[str] | None = None) -> Namespace:
         "--passphrase",
         metavar="PASSPHRASE",
         help="Pass passphrase as a CLI argument. ",
+    )
+
+    _ = parser.add_argument(
+        "-r",
+        "--recipient",
+        type=normalize_recipient,
+        dest="recipients",
+        action="append",
+        help="An age recipient public key (age1...). "
+        "Can be repeated to encrypt the data for multiple recipients. "
+        "Encrypt-only; cannot be combined with --passphrase options "
+        "or used in decrypt mode.",
     )
 
     _ = parser.add_argument(
@@ -114,6 +133,11 @@ def get_identities(arguments: Namespace) -> list[pyrage.x25519.Identity]:
     return identities
 
 
+def get_recipients(arguments: Namespace) -> list[pyrage.x25519.Recipient]:
+    recipients: list[pyrage.x25519.Recipient] = arguments.recipients or []
+    return recipients
+
+
 def get_value(arguments: Namespace) -> str:
     return arguments.value or sys.stdin.read()
 
@@ -121,6 +145,14 @@ def get_value(arguments: Namespace) -> str:
 def determine_encryption_type(
     arguments: Namespace,
 ) -> Literal["identity", "passphrase"]:
+    if arguments.recipients and (
+        arguments.passphrase or arguments.passphrase_from_stdin
+    ):
+        LOGGER.critical("--recipient cannot be combined with --passphrase options")
+        raise SystemExit(-1)
+
+    if arguments.recipients:
+        return "identity"
     if arguments.passphrase or arguments.passphrase_from_stdin:
         return "passphrase"
     if arguments.identities:
@@ -148,6 +180,10 @@ def encrypt(arguments: Namespace) -> None:
 
     if type_ == "identity":
         recipients = [identity.to_public() for identity in get_identities(arguments)]
+        recipients.extend(get_recipients(arguments))
+        if not recipients:
+            LOGGER.critical("No identity or recipient provided for encryption")
+            raise SystemExit(-1)
         ciphertext = pyrage.encrypt(value, recipients)
     else:
         ciphertext = pyrage.passphrase.encrypt(value, get_passphrase(arguments))
@@ -156,6 +192,12 @@ def encrypt(arguments: Namespace) -> None:
 
 
 def decrypt(arguments: Namespace) -> None:
+    if arguments.recipients:
+        LOGGER.critical(
+            "--recipient cannot be used to decrypt; provide --identity instead"
+        )
+        raise SystemExit(-1)
+
     secure_value = parse_secure_value(get_value(arguments))
 
     if isinstance(secure_value, IdentitySecureValue):

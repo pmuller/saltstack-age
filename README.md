@@ -39,6 +39,9 @@ sudo salt-pip install saltstack-age
 age can be used to encrypt data using either a passphrase or an identity file.
 This extension supports both, and they can be defined either in the Saltstack
 daemon configuration file, or in the daemon environment.
+For encryption, you can also provide a recipient public key (`age1...`) via
+the CLI `-r`/`--recipient` flag — useful when you only have the public key
+of whoever will decrypt the secret.
 
 | Type         | Configuration directive | Environment variable | Expected value               |
 | ------------ | ----------------------- | -------------------- | ---------------------------- |
@@ -59,6 +62,13 @@ This package provides a handy CLI tool to make it easier:
 ```sh
 $ saltstack-age -P secret-passphrase enc secret-value
 ENC[age-passphrase,YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IHNjcnlwdCB1QndwT3dJejhaSEtZZlIxeFEvZk5RIDIwCmhrcm9OY0tTOWdwNkhWbDdadlNIOHRFYmFLdkpZSjhLTktTWXhZVHFHKzgKLS0tIHFJWVRNc0JzTkpKNHJ1TFBuZ2tybWt0WWVQR0wrbjVnMmlZYzRaWVlBbFkKPWQu4lawaAu1owDXPDwwmj9/tN9/5NF/Avd4jPrLoy/ugUb0ciqm8H5My44=]
+```
+
+You can also encrypt to a recipient public key (no access to the private
+key required):
+
+```sh
+saltstack-age -r age1spnr3m67eudy9p5cvtj3jz8kfzz5t7dv3wy6t694suv3s84fg4jqj0ydnk enc secret-value
 ```
 
 > [!CAUTION]

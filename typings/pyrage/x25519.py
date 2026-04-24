@@ -1,5 +1,6 @@
 class Recipient:
-    pass
+    @classmethod
+    def from_str(cls, recipient_string: str) -> "Recipient": ...
 
 
 class Identity:
