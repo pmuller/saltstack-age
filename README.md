@@ -155,18 +155,18 @@ that can help you effectively utilize age encryption in your SaltStack projects.
 
 ## Development
 
-* Environment is managed with [rye](https://rye-up.com/)
-* Create a virtualenv: `rye sync`
-* Check typing: `rye run basedpyright`
-* Check formatting with ruff: `rye fmt -- --check`
-* Check linting with ruff: `rye check`
-* Run tests: `rye run pytest`
+* Environment is managed with [uv](https://docs.astral.sh/uv/)
+* Create a virtualenv: `uv sync`
+* Check typing: `uv run basedpyright`
+* Check formatting with ruff: `uv run ruff format --check`
+* Check linting with ruff: `uv run ruff check`
+* Run tests: `uv run pytest`
 
 See [workflow](./.github/workflows/build.yaml) for reference.
 
 ## Release
 
-* Build package: `rye build --clean --wheel`
-* Publish package: `rye publish`
+* Build package: `uv build`
+* Publish package: `uv publish`
 
 See [workflow](./.github/workflows/release.yaml) for reference.

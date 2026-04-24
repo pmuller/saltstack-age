@@ -1,6 +1,6 @@
 from pyrage import passphrase, x25519
 
-__all__ = ["x25519", "passphrase"]
+__all__ = ["passphrase", "x25519"]
 
 def decrypt(ciphertext: bytes, identities: list[x25519.Identity]) -> bytes: ...
 def encrypt(value: bytes, recipients: list[x25519.Recipient]) -> bytes: ...

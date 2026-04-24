@@ -3,6 +3,7 @@ from pathlib import Path
 
 import pyrage
 import pytest
+
 from saltstack_age.cli import main
 from saltstack_age.identities import read_identity_file
 from saltstack_age.secure_value import (

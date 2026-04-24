@@ -82,7 +82,7 @@ def _render_value(value: Any) -> Any:  # noqa: ANN401
     if is_secure_value(value):
         return _decrypt(value)
     if isinstance(value, OrderedDict):
-        return render(cast(Data, value))
+        return render(cast("Data", value))
     return value
 
 

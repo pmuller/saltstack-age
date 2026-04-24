@@ -7,7 +7,7 @@ from tests.integration import _test_renderer_identity
 from tests.integration.conftest import MINION_CONFIG
 
 
-@pytest.fixture()
+@pytest.fixture
 def minion(
     salt_factories: FactoriesManager,
     monkeypatch: pytest.MonkeyPatch,
