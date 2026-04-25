@@ -108,15 +108,17 @@ To prepare a release:
 
 6. Commit the release prep with a focused conventional commit message such as
    `chore(release): prepare 0.4.1`.
-7. After the release prep commit is on `main`, create and push an annotated tag
-   whose name exactly matches `project.version`:
+7. After the release prep commit is on `main`, run the post-merge release
+   script with the exact release version:
 
    ```sh
-   git tag -a 0.4.1 -m "Release 0.4.1"
-   git push origin 0.4.1
+   scripts/release.sh 0.4.1
    ```
 
-The GitHub release workflow verifies that the pushed tag matches
+The script fast-forwards local `main` from `origin/main`, verifies that the
+requested version matches `pyproject.toml`, verifies that `CHANGELOG.md`
+contains the release section, creates the annotated tag, and pushes it to
+origin. The GitHub release workflow then verifies that the pushed tag matches
 `pyproject.toml`, runs checks, builds wheel and source distribution artifacts,
 smoke-tests both artifacts, then publishes to PyPI.
 
