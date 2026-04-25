@@ -1877,7 +1877,7 @@ sdist = { url = "https://files.pythonhosted.org/packages/b1/e2/e01042600341ad717
 
 [[package]]
 name = "saltstack-age"
-version = "0.4.0"
+version = "0.5.0"
 source = { editable = "." }
 dependencies = [
     { name = "pyrage" },
