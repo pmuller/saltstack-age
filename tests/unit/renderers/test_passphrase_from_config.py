@@ -1,5 +1,4 @@
 from types import ModuleType
-from typing import Any
 
 import pytest
 
@@ -13,7 +12,7 @@ def _config_get(key: str) -> str:
 
 
 @pytest.fixture
-def configure_loader_modules() -> dict[ModuleType, Any]:
+def configure_loader_modules() -> dict[ModuleType, object]:
     return {age: {"__salt__": {"config.get": _config_get}}}
 
 

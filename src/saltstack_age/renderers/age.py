@@ -1,7 +1,7 @@
 from collections import OrderedDict
 from importlib import import_module
 from pathlib import Path
-from typing import Any, cast
+from typing import cast
 
 import pyrage
 from salt.exceptions import SaltRenderError
@@ -14,7 +14,7 @@ from saltstack_age.secure_value import (
     parse_secure_value,
 )
 
-Data = OrderedDict[str, Any]
+Data = OrderedDict[str, object]
 
 __virtualname__ = "age"
 
@@ -78,9 +78,9 @@ def _decrypt(string: str) -> str:
     return secure_value.decrypt(_get_passphrase())
 
 
-def _render_value(value: Any) -> Any:  # noqa: ANN401
+def _render_value(value: object) -> object:
     if is_secure_value(value):
-        return _decrypt(value)
+        return _decrypt(cast("str", value))
     if isinstance(value, OrderedDict):
         return render(cast("Data", value))
     return value

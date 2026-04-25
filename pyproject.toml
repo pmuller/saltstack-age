@@ -159,3 +159,9 @@ ignore = [
 [tool.basedpyright]
 reportAny = false
 reportImplicitStringConcatenation = false
+
+# Stub files under typings/ describe external APIs (Salt, saltfactories) that
+# legitimately use Any. Relax the strict checks there only.
+[[tool.basedpyright.executionEnvironments]]
+root = "typings"
+reportExplicitAny = "none"

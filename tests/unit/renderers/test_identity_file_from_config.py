@@ -1,6 +1,5 @@
 from collections.abc import Callable
 from types import ModuleType
-from typing import Any
 
 import pytest
 
@@ -22,7 +21,7 @@ def config_get(example_age_key_path_str: str) -> Callable[[str], str | None]:
 @pytest.fixture
 def configure_loader_modules(
     config_get: Callable[[str], str | None],
-) -> dict[ModuleType, Any]:
+) -> dict[ModuleType, object]:
     return {age: {"__salt__": {"config.get": config_get}}}
 
 
