@@ -6,7 +6,7 @@ from saltstack_age.renderers import age
 from tests.unit.renderers import _test_identity
 
 
-def _config_get_none(_key: str) -> None:
+def _config_get_none(_key: str, _default: object = None) -> None:
     return None
 
 

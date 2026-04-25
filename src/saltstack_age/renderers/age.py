@@ -1,6 +1,7 @@
 from collections import OrderedDict
 from importlib import import_module
 from pathlib import Path
+from subprocess import PIPE, STDOUT, TimeoutExpired, run
 from typing import cast
 
 import pyrage
@@ -15,6 +16,9 @@ from saltstack_age.secure_value import (
 )
 
 Data = OrderedDict[str, object]
+IDENTITY_COMMAND_TIMEOUT_SECONDS = 10
+IDENTITY_COMMAND_MAX_OUTPUT_BYTES = 16 * 1024
+_CONFIG_MISSING = "__saltstack_age_missing_config__"
 
 __virtualname__ = "age"
 
@@ -30,6 +34,66 @@ def __virtual__() -> str | tuple[bool, str]:  # noqa: N807
         return (False, "pyrage is not installed")
 
     return __virtualname__
+
+
+def _type_name(value: object) -> str:
+    return type(value).__name__
+
+
+def _normalize_identity_command(command: object) -> list[str] | None:
+    if command is None:
+        return None
+
+    if not isinstance(command, list) or not command:
+        raise SaltRenderError(
+            "age_identity_command must be a non-empty list of strings"
+        )
+
+    normalized_command: list[str] = []
+    for argument in cast("list[object]", command):
+        if not isinstance(argument, str):
+            raise SaltRenderError(
+                "age_identity_command must be a non-empty list of strings "
+                f"(got {_type_name(argument)} item)"
+            )
+        normalized_command.append(argument)
+
+    return normalized_command
+
+
+def _get_identity_from_command(command: list[str]) -> pyrage.x25519.Identity:
+    try:
+        process = run(
+            command,
+            stdout=PIPE,
+            stderr=STDOUT,
+            timeout=IDENTITY_COMMAND_TIMEOUT_SECONDS,
+            check=False,
+        )
+    except FileNotFoundError as error:
+        raise SaltRenderError(
+            f"age_identity_command executable not found: {command[0]}"
+        ) from error
+    except PermissionError as error:
+        raise SaltRenderError(
+            f"age_identity_command executable is not allowed: {command[0]}"
+        ) from error
+    except TimeoutExpired as error:
+        raise SaltRenderError("age_identity_command timed out") from error
+    except OSError as error:
+        raise SaltRenderError(
+            f"age_identity_command failed to start: {error}"
+        ) from error
+
+    if process.returncode != 0:
+        raise SaltRenderError(
+            f"age_identity_command failed with exit code {process.returncode}"
+        )
+
+    if len(process.stdout) > IDENTITY_COMMAND_MAX_OUTPUT_BYTES:
+        raise SaltRenderError("age_identity_command output is too large")
+
+    return pyrage.x25519.Identity.from_str(process.stdout.decode().strip())
 
 
 def _get_identity() -> pyrage.x25519.Identity:
@@ -55,7 +119,18 @@ def _get_identity() -> pyrage.x25519.Identity:
     if identity:
         return identity
 
-    raise SaltRenderError("No age identity file found in config or environment")
+    config_option = __salt__.get("config.option", __salt__["config.get"])
+    identity_command_config = config_option(
+        "age_identity_command",
+        _CONFIG_MISSING,
+    )
+    identity_command = _normalize_identity_command(
+        None if identity_command_config == _CONFIG_MISSING else identity_command_config
+    )
+    if identity_command:
+        return _get_identity_from_command(identity_command)
+
+    raise SaltRenderError("No age identity found in config or environment")
 
 
 def _get_passphrase() -> str:

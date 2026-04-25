@@ -47,7 +47,20 @@ of whoever will decrypt the secret.
 | ------------ | ----------------------- | -------------------- | ---------------------------- |
 | identity     | `age_identity_file`     | `AGE_IDENTITY_FILE`  | Path of an age identity file |
 | identity     | `age_identity`          | `AGE_IDENTITY`       | An age identity string       |
+| identity     | `age_identity_command`  |                      | Command returning an identity |
 | passphrase   | `age_passphrase`        | `AGE_PASSPHRASE`     | An age passphrase            |
+
+`age_identity_command` must be a list of command arguments. It is executed
+without a shell, and its standard output must contain the age identity.
+For example, to keep the identity in
+[pass](https://www.passwordstore.org/):
+
+```yaml
+age_identity_command:
+  - pass
+  - show
+  - infra/salt/age-identity
+```
 
 You can check this [example configuration](./example/config/minion).
 
