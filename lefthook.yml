@@ -1,0 +1,15 @@
+pre-commit:
+  piped: true
+  commands:
+    01-ruff-check:
+      glob: "*.py"
+      run: uv run ruff check --fix {staged_files}
+      stage_fixed: true
+    02-ruff-format:
+      glob: "*.py"
+      run: uv run ruff format {staged_files}
+      stage_fixed: true
+    03-basedpyright:
+      run: uv run basedpyright
+    04-pytest:
+      run: uv run pytest

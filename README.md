@@ -39,12 +39,28 @@ sudo salt-pip install saltstack-age
 age can be used to encrypt data using either a passphrase or an identity file.
 This extension supports both, and they can be defined either in the Saltstack
 daemon configuration file, or in the daemon environment.
+For encryption, you can also provide a recipient public key (`age1...`) via
+the CLI `-r`/`--recipient` flag — useful when you only have the public key
+of whoever will decrypt the secret.
 
 | Type         | Configuration directive | Environment variable | Expected value               |
 | ------------ | ----------------------- | -------------------- | ---------------------------- |
 | identity     | `age_identity_file`     | `AGE_IDENTITY_FILE`  | Path of an age identity file |
 | identity     | `age_identity`          | `AGE_IDENTITY`       | An age identity string       |
+| identity     | `age_identity_command`  |                      | Command returning an identity |
 | passphrase   | `age_passphrase`        | `AGE_PASSPHRASE`     | An age passphrase            |
+
+`age_identity_command` must be a list of command arguments. It is executed
+without a shell, and its standard output must contain the age identity.
+For example, to keep the identity in
+[pass](https://www.passwordstore.org/):
+
+```yaml
+age_identity_command:
+  - pass
+  - show
+  - infra/salt/age-identity
+```
 
 You can check this [example configuration](./example/config/minion).
 
@@ -59,6 +75,13 @@ This package provides a handy CLI tool to make it easier:
 ```sh
 $ saltstack-age -P secret-passphrase enc secret-value
 ENC[age-passphrase,YWdlLWVuY3J5cHRpb24ub3JnL3YxCi0+IHNjcnlwdCB1QndwT3dJejhaSEtZZlIxeFEvZk5RIDIwCmhrcm9OY0tTOWdwNkhWbDdadlNIOHRFYmFLdkpZSjhLTktTWXhZVHFHKzgKLS0tIHFJWVRNc0JzTkpKNHJ1TFBuZ2tybWt0WWVQR0wrbjVnMmlZYzRaWVlBbFkKPWQu4lawaAu1owDXPDwwmj9/tN9/5NF/Avd4jPrLoy/ugUb0ciqm8H5My44=]
+```
+
+You can also encrypt to a recipient public key (no access to the private
+key required):
+
+```sh
+saltstack-age -r age1spnr3m67eudy9p5cvtj3jz8kfzz5t7dv3wy6t694suv3s84fg4jqj0ydnk enc secret-value
 ```
 
 > [!CAUTION]
@@ -145,18 +168,20 @@ that can help you effectively utilize age encryption in your SaltStack projects.
 
 ## Development
 
-* Environment is managed with [rye](https://rye-up.com/)
-* Create a virtualenv: `rye sync`
-* Check typing: `rye run basedpyright`
-* Check formatting with ruff: `rye fmt -- --check`
-* Check linting with ruff: `rye check`
-* Run tests: `rye run pytest`
+* Environment is managed with [uv](https://docs.astral.sh/uv/)
+* Create a virtualenv: `uv sync`
+* Install Git hooks: `uv run lefthook install`
+* Run all configured Git hooks manually: `uv run lefthook run pre-commit --all-files`
+* Check typing: `uv run basedpyright`
+* Check formatting with ruff: `uv run ruff format --check`
+* Check linting with ruff: `uv run ruff check`
+* Run tests: `uv run pytest`
 
 See [workflow](./.github/workflows/build.yaml) for reference.
 
 ## Release
 
-* Build package: `rye build --clean --wheel`
-* Publish package: `rye publish`
+* Build package: `uv build`
+* Publish package: `uv publish`
 
 See [workflow](./.github/workflows/release.yaml) for reference.

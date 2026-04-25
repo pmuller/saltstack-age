@@ -27,6 +27,6 @@ def salt_factories_config() -> dict[str, str | int | bool | None]:
     }
 
 
-@pytest.fixture()
+@pytest.fixture
 def salt_call_cli(minion: SaltMinion) -> SaltCall:
     return minion.salt_call_cli()

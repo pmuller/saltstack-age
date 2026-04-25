@@ -28,6 +28,13 @@ def normalize_identity(identity: str) -> pyrage.x25519.Identity:
     raise ArgumentTypeError(f"Identity file does not exist: {identity}")
 
 
+def normalize_recipient(recipient: str) -> pyrage.x25519.Recipient:
+    try:
+        return pyrage.x25519.Recipient.from_str(recipient)
+    except Exception as error:
+        raise ArgumentTypeError(f"Invalid age recipient: {recipient}") from error
+
+
 def parse_cli_arguments(args: Sequence[str] | None = None) -> Namespace:
     parser = ArgumentParser(
         description="Encrypt or decrypt secrets for use with saltstack-age renderer.",
@@ -60,6 +67,18 @@ def parse_cli_arguments(args: Sequence[str] | None = None) -> Namespace:
     )
 
     _ = parser.add_argument(
+        "-r",
+        "--recipient",
+        type=normalize_recipient,
+        dest="recipients",
+        action="append",
+        help="An age recipient public key (age1...). "
+        "Can be repeated to encrypt the data for multiple recipients. "
+        "Encrypt-only; cannot be combined with --passphrase options "
+        "or used in decrypt mode.",
+    )
+
+    _ = parser.add_argument(
         "-D", "--debug", action="store_true", help="Enable debug logging"
     )
 
@@ -81,7 +100,17 @@ def parse_cli_arguments(args: Sequence[str] | None = None) -> Namespace:
 def configure_logging(*, debug: bool) -> None:
     level = logging.DEBUG if debug else logging.INFO
     format_ = "%(levelname)s:%(name)s:%(message)s" if debug else "%(message)s"
-    logging.basicConfig(level=level, format=format_, style="%")
+    handler = logging.StreamHandler(sys.stderr)
+    handler.setFormatter(logging.Formatter(format_, style="%"))
+    # Attach the handler to the package logger and disable propagation so
+    # records do not reach the root logger. Salt installs a deferred handler
+    # on root that buffers records and flushes them at interpreter shutdown;
+    # under pytest the buffered records would be flushed to streams that
+    # pytest's capture machinery has already closed.
+    package_logger = logging.getLogger("saltstack_age")
+    package_logger.setLevel(level)
+    package_logger.addHandler(handler)
+    package_logger.propagate = False
 
 
 def get_passphrase(arguments: Namespace) -> str:
@@ -114,6 +143,11 @@ def get_identities(arguments: Namespace) -> list[pyrage.x25519.Identity]:
     return identities
 
 
+def get_recipients(arguments: Namespace) -> list[pyrage.x25519.Recipient]:
+    recipients: list[pyrage.x25519.Recipient] = arguments.recipients or []
+    return recipients
+
+
 def get_value(arguments: Namespace) -> str:
     return arguments.value or sys.stdin.read()
 
@@ -121,6 +155,14 @@ def get_value(arguments: Namespace) -> str:
 def determine_encryption_type(
     arguments: Namespace,
 ) -> Literal["identity", "passphrase"]:
+    if arguments.recipients and (
+        arguments.passphrase or arguments.passphrase_from_stdin
+    ):
+        LOGGER.critical("--recipient cannot be combined with --passphrase options")
+        raise SystemExit(-1)
+
+    if arguments.recipients:
+        return "identity"
     if arguments.passphrase or arguments.passphrase_from_stdin:
         return "passphrase"
     if arguments.identities:
@@ -148,6 +190,10 @@ def encrypt(arguments: Namespace) -> None:
 
     if type_ == "identity":
         recipients = [identity.to_public() for identity in get_identities(arguments)]
+        recipients.extend(get_recipients(arguments))
+        if not recipients:
+            LOGGER.critical("No identity or recipient provided for encryption")
+            raise SystemExit(-1)
         ciphertext = pyrage.encrypt(value, recipients)
     else:
         ciphertext = pyrage.passphrase.encrypt(value, get_passphrase(arguments))
@@ -156,6 +202,12 @@ def encrypt(arguments: Namespace) -> None:
 
 
 def decrypt(arguments: Namespace) -> None:
+    if arguments.recipients:
+        LOGGER.critical(
+            "--recipient cannot be used to decrypt; provide --identity instead"
+        )
+        raise SystemExit(-1)
+
     secure_value = parse_secure_value(get_value(arguments))
 
     if isinstance(secure_value, IdentitySecureValue):

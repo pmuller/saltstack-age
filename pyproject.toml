@@ -1,13 +1,13 @@
 [project]
 name = "saltstack-age"
-version = "0.4.0"
+version = "0.5.0"
 description = "age renderer for Saltstack"
 authors = [{ name = "Philippe Muller" }]
 dependencies = [
     "pyrage>=1.1.2",
 ]
 readme = "README.md"
-requires-python = ">= 3.8"
+requires-python = ">= 3.10"
 license = {text = "MIT License"}
 keywords = ["saltstack", "salt", "pillar", "age", "encryption", "security"]
 classifiers = [
@@ -28,15 +28,36 @@ Repository = "https://github.com/pmuller/saltstack-age.git"
 Issues = "https://github.com/pmuller/saltstack-age/issues"
 Changelog = "https://github.com/pmuller/saltstack-age/blob/main/CHANGELOG.md"
 
-[tool.rye]
-managed = true
-dev-dependencies = [
+[dependency-groups]
+dev = [
     "ipython>=8.23.0",
-    "pytest>=8.1.2",
+    "pytest>=9.0.3",
     "pytest-salt-factories>=1.0.1",
     "salt>=3007.0",
-    "basedpyright>=1.10.4",
-    "ruff>=0.4.2",
+    # Salt's PyPI wheel does not declare its runtime dependencies, so we
+    # pin them explicitly here for the test environment.
+    "aiohttp",
+    "cherrypy",
+    "contextvars",
+    "cryptography",
+    "distro",
+    "jinja2",
+    "looseversion",
+    "msgpack",
+    "packaging",
+    "psutil",
+    "pyopenssl",
+    "pyyaml",
+    "pyzmq",
+    "requests",
+    "setproctitle",
+    "tempora",
+    "timelib",
+    "tornado",
+    "zc.lockfile",
+    "basedpyright>=1.39.3",
+    "ruff>=0.15.12",
+    "lefthook>=2.1.6",
 ]
 
 [project.scripts]
@@ -121,8 +142,6 @@ ignore = [
     "D107",   # Missing docstring in `__init__`
     "D203",   # one-blank-line-before-class
     "D212",   # multi-line-summary-first-line
-    "ANN101", # Missing type annotation for `self` in method
-    "ANN102", # Missing type annotation for `cls` in classmethod
     "ANN204", # Missing return type annotation for special method `__init__`
     "TRY002", # Create your own exception
     "TRY003", # Avoid specifying long messages outside the exception class
@@ -141,3 +160,9 @@ ignore = [
 [tool.basedpyright]
 reportAny = false
 reportImplicitStringConcatenation = false
+
+# Stub files under typings/ describe external APIs (Salt, saltfactories) that
+# legitimately use Any. Relax the strict checks there only.
+[[tool.basedpyright.executionEnvironments]]
+root = "typings"
+reportExplicitAny = "none"
