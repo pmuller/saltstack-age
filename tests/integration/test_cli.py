@@ -3,6 +3,7 @@ from pathlib import Path
 
 import pyrage
 import pytest
+
 from saltstack_age.cli import main
 from saltstack_age.identities import read_identity_file
 from saltstack_age.secure_value import (
@@ -35,6 +36,56 @@ def test_encrypt__single_recipient(
     assert isinstance(secure_value, IdentitySecureValue)
     # Ensure we can decrypt it using the same identity
     assert secure_value.decrypt(read_identity_file(example_age_key_path_str)) == "foo"
+
+
+def test_encrypt__recipient_only(capsys: pytest.CaptureFixture[str]) -> None:
+    identity = pyrage.x25519.Identity.generate()
+    public_key = str(identity.to_public())
+    # Run the CLI tool with a recipient public key
+    main(["-r", public_key, "enc", "foo"])
+    # Ensure we get an identity secure value string
+    secure_value_string = capsys.readouterr().out
+    secure_value = parse_secure_value(secure_value_string)
+    assert isinstance(secure_value, IdentitySecureValue)
+    # Ensure we can decrypt it using the original identity
+    assert secure_value.decrypt(identity) == "foo"
+
+
+def test_encrypt__recipient_and_identity(
+    capsys: pytest.CaptureFixture[str],
+    tmp_path: Path,
+) -> None:
+    identity_file = pyrage.x25519.Identity.generate()
+    identity_file_path = tmp_path / "identity"
+    _ = identity_file_path.write_text(str(identity_file))
+    identity_recipient = pyrage.x25519.Identity.generate()
+    public_key = str(identity_recipient.to_public())
+    # Run the CLI tool with both -i and -r
+    main(["-i", str(identity_file_path), "-r", public_key, "enc", "foo"])
+    # Ensure we get an identity secure value string
+    secure_value_string = capsys.readouterr().out
+    secure_value = parse_secure_value(secure_value_string)
+    assert isinstance(secure_value, IdentitySecureValue)
+    # Ensure we can decrypt it with either key
+    assert secure_value.decrypt(identity_file) == "foo"
+    assert secure_value.decrypt(identity_recipient) == "foo"
+
+
+def test_encrypt__recipient_with_passphrase_fails() -> None:
+    public_key = str(pyrage.x25519.Identity.generate().to_public())
+    with pytest.raises(SystemExit):
+        main(["-r", public_key, "-P", "pw", "enc", "foo"])
+
+
+def test_decrypt__recipient_fails() -> None:
+    public_key = str(pyrage.x25519.Identity.generate().to_public())
+    with pytest.raises(SystemExit):
+        main(["-r", public_key, "dec", "ENC[age-identity,deadbeef]"])
+
+
+def test_recipient__invalid_string_fails() -> None:
+    with pytest.raises(SystemExit):
+        main(["-r", "not-a-valid-age-recipient", "enc", "foo"])
 
 
 def test_encrypt__multiple_recipients(

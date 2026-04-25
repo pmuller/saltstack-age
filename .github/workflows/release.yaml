@@ -2,11 +2,11 @@ name: Release
 
 on:
   push:
-    branches:
-      - main
+    tags:
+      - "*.*.*"
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
 
@@ -15,30 +15,21 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: eifinger/setup-rye@v2
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: astral-sh/setup-uv@v5
         with:
           enable-cache: true
-      - run: rye build --clean
-      - run: rye publish --skip-existing --token ${{ secrets.SALTSTACK_AGE_PYPI_TOKEN }} --yes
-
-  tag:
-    name: Create Git tag
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - run: |
-          git config --global user.name 'Github workflow'
-          git config --global user.email 'pmuller@users.noreply.github.com'
-
-          VERSION=$(grep -oP '^version = "\K(\d+\.\d+\.\d+)' pyproject.toml)
-
-          if git rev-parse --verify $VERSION >/dev/null 2>&1
-          then
-            echo "Tag $VERSION already exists"
-            exit
-          fi
-
-          git tag $VERSION -a -m "Automatically created"
-          git push origin $VERSION
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - id: version
+        run: echo "version=$(grep -oP '^version = \"\K(\d+\.\d+\.\d+)' pyproject.toml)" >> "$GITHUB_OUTPUT"
+      - run: test "$GITHUB_REF_NAME" = "${{ steps.version.outputs.version }}"
+      - run: uv sync --locked
+      - run: uv run ruff format --check
+      - run: uv run ruff check
+      - run: uv run basedpyright
+      - run: uv run pytest -vvv
+      - run: uv build
+      - run: uv run --no-project --isolated --with dist/*.whl saltstack-age --help
+      - run: uv run --no-project --isolated --with dist/*.tar.gz saltstack-age --help
+      - run: uv publish --check-url https://pypi.org/simple/ --token ${{ secrets.SALTSTACK_AGE_PYPI_TOKEN }}

@@ -1,13 +1,13 @@
+from collections.abc import Callable
 from types import ModuleType
-from typing import Any, Callable
 
 import pytest
-from saltstack_age.renderers import age
 
+from saltstack_age.renderers import age
 from tests.unit.renderers import _test_identity
 
 
-@pytest.fixture()
+@pytest.fixture
 def config_get(example_age_key_path_str: str) -> Callable[[str], str | None]:
     def _config_get(key: str) -> str | None:
         if key == "age_identity":
@@ -18,10 +18,10 @@ def config_get(example_age_key_path_str: str) -> Callable[[str], str | None]:
     return _config_get
 
 
-@pytest.fixture()
+@pytest.fixture
 def configure_loader_modules(
     config_get: Callable[[str], str | None],
-) -> dict[ModuleType, Any]:
+) -> dict[ModuleType, object]:
     return {age: {"__salt__": {"config.get": config_get}}}
 
 
