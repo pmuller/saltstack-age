@@ -157,6 +157,8 @@ that can help you effectively utilize age encryption in your SaltStack projects.
 
 * Environment is managed with [uv](https://docs.astral.sh/uv/)
 * Create a virtualenv: `uv sync`
+* Install Git hooks: `uv run lefthook install`
+* Run all configured Git hooks manually: `uv run lefthook run pre-commit --all-files`
 * Check typing: `uv run basedpyright`
 * Check formatting with ruff: `uv run ruff format --check`
 * Check linting with ruff: `uv run ruff check`

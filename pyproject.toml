@@ -57,6 +57,7 @@ dev = [
     "zc.lockfile",
     "basedpyright>=1.10.4",
     "ruff>=0.4.2",
+    "lefthook>=2.1.6",
 ]
 
 [project.scripts]
