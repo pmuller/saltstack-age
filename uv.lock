@@ -1933,7 +1933,7 @@ dev = [
     { name = "packaging" },
     { name = "psutil" },
     { name = "pyopenssl" },
-    { name = "pytest", specifier = ">=8.1.2" },
+    { name = "pytest", specifier = ">=9.0.3" },
     { name = "pytest-salt-factories", specifier = ">=1.0.1" },
     { name = "pyyaml" },
     { name = "pyzmq" },

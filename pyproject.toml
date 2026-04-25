@@ -31,7 +31,7 @@ Changelog = "https://github.com/pmuller/saltstack-age/blob/main/CHANGELOG.md"
 [dependency-groups]
 dev = [
     "ipython>=8.23.0",
-    "pytest>=8.1.2",
+    "pytest>=9.0.3",
     "pytest-salt-factories>=1.0.1",
     "salt>=3007.0",
     # Salt's PyPI wheel does not declare its runtime dependencies, so we
