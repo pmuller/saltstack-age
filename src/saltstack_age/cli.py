@@ -100,7 +100,17 @@ def parse_cli_arguments(args: Sequence[str] | None = None) -> Namespace:
 def configure_logging(*, debug: bool) -> None:
     level = logging.DEBUG if debug else logging.INFO
     format_ = "%(levelname)s:%(name)s:%(message)s" if debug else "%(message)s"
-    logging.basicConfig(level=level, format=format_, style="%")
+    handler = logging.StreamHandler(sys.stderr)
+    handler.setFormatter(logging.Formatter(format_, style="%"))
+    # Attach the handler to the package logger and disable propagation so
+    # records do not reach the root logger. Salt installs a deferred handler
+    # on root that buffers records and flushes them at interpreter shutdown;
+    # under pytest the buffered records would be flushed to streams that
+    # pytest's capture machinery has already closed.
+    package_logger = logging.getLogger("saltstack_age")
+    package_logger.setLevel(level)
+    package_logger.addHandler(handler)
+    package_logger.propagate = False
 
 
 def get_passphrase(arguments: Namespace) -> str:
