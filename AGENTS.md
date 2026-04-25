@@ -88,6 +88,41 @@ uv run lefthook dump
 * Update `example/` when a behavior change affects documented Salt
   configuration.
 
+## Release Management
+
+Releases are tag-driven. A push to `main` must not publish to PyPI by itself.
+
+To prepare a release:
+
+1. Update `CHANGELOG.md` so the release notes cover all changes since the
+   previous version tag.
+2. Bump `project.version` in `pyproject.toml`.
+3. Run `uv run lefthook run pre-commit --all-files`.
+4. Run `uv build`.
+5. Smoke-test both built artifacts:
+
+   ```sh
+   uv run --no-project --isolated --with dist/*.whl saltstack-age --help
+   uv run --no-project --isolated --with dist/*.tar.gz saltstack-age --help
+   ```
+
+6. Commit the release prep with a focused conventional commit message such as
+   `chore(release): prepare 0.4.1`.
+7. After the release prep commit is on `main`, create and push an annotated tag
+   whose name exactly matches `project.version`:
+
+   ```sh
+   git tag -a 0.4.1 -m "Release 0.4.1"
+   git push origin 0.4.1
+   ```
+
+The GitHub release workflow verifies that the pushed tag matches
+`pyproject.toml`, runs checks, builds wheel and source distribution artifacts,
+smoke-tests both artifacts, then publishes to PyPI.
+
+Do not create a release tag for a dirty worktree, an unmerged feature branch,
+or a commit whose `pyproject.toml` version does not match the tag.
+
 ## Git Hygiene
 
 * Inspect `git status --short` before editing and before committing.
