@@ -1920,7 +1920,7 @@ requires-dist = [{ name = "pyrage", specifier = ">=1.1.2" }]
 [package.metadata.requires-dev]
 dev = [
     { name = "aiohttp" },
-    { name = "basedpyright", specifier = ">=1.10.4" },
+    { name = "basedpyright", specifier = ">=1.39.3" },
     { name = "cherrypy" },
     { name = "contextvars" },
     { name = "cryptography" },

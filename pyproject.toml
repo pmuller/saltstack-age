@@ -55,7 +55,7 @@ dev = [
     "timelib",
     "tornado",
     "zc.lockfile",
-    "basedpyright>=1.10.4",
+    "basedpyright>=1.39.3",
     "ruff>=0.15.12",
     "lefthook>=2.1.6",
 ]
