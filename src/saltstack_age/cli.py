@@ -149,7 +149,7 @@ def get_recipients(arguments: Namespace) -> list[pyrage.x25519.Recipient]:
 
 
 def get_value(arguments: Namespace) -> str:
-    return arguments.value or sys.stdin.read()
+    return arguments.value or sys.stdin.read().rstrip()
 
 
 def determine_encryption_type(
