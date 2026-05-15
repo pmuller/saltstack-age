@@ -149,7 +149,10 @@ def get_recipients(arguments: Namespace) -> list[pyrage.x25519.Recipient]:
 
 
 def get_value(arguments: Namespace) -> str:
-    return arguments.value or sys.stdin.read().rstrip()
+    try:
+        return arguments.value or sys.stdin.read().rstrip()
+    except KeyboardInterrupt as exc:
+        raise SystemExit(-1) from exc
 
 
 def determine_encryption_type(
