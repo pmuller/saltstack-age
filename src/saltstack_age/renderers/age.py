@@ -1,7 +1,7 @@
 from collections import OrderedDict
 from importlib import import_module
 from pathlib import Path
-from subprocess import PIPE, STDOUT, TimeoutExpired, run
+from subprocess import PIPE, TimeoutExpired, run
 from typing import cast
 
 import pyrage
@@ -66,7 +66,6 @@ def _get_identity_from_command(command: list[str]) -> pyrage.x25519.Identity:
         process = run(
             command,
             stdout=PIPE,
-            stderr=STDOUT,
             timeout=IDENTITY_COMMAND_TIMEOUT_SECONDS,
             check=False,
         )
@@ -158,6 +157,9 @@ def _render_value(value: object) -> object:
         return _decrypt(cast("str", value))
     if isinstance(value, OrderedDict):
         return render(cast("Data", value))
+    if isinstance(value, list):
+        items = cast("list[object]", value)
+        return [_render_value(item) for item in items]
     return value
 
 

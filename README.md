@@ -52,6 +52,7 @@ of whoever will decrypt the secret.
 
 `age_identity_command` must be a list of command arguments. It is executed
 without a shell, and its standard output must contain the age identity.
+Standard error passes through unchanged and is not parsed as part of the identity.
 For example, to keep the identity in
 [pass](https://www.passwordstore.org/):
 
