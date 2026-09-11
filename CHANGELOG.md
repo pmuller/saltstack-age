@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+* feat(renderer): decrypt encrypted values inside YAML lists
+
 ## 0.5.0
 
 * feat: publish both wheel and source distribution artifacts

@@ -158,6 +158,9 @@ def _render_value(value: object) -> object:
         return _decrypt(cast("str", value))
     if isinstance(value, OrderedDict):
         return render(cast("Data", value))
+    if isinstance(value, list):
+        items = cast("list[object]", value)
+        return [_render_value(item) for item in items]
     return value
 
 
