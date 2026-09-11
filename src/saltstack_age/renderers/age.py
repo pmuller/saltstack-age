@@ -1,7 +1,7 @@
 from collections import OrderedDict
 from importlib import import_module
 from pathlib import Path
-from subprocess import PIPE, STDOUT, TimeoutExpired, run
+from subprocess import PIPE, TimeoutExpired, run
 from typing import cast
 
 import pyrage
@@ -66,7 +66,6 @@ def _get_identity_from_command(command: list[str]) -> pyrage.x25519.Identity:
         process = run(
             command,
             stdout=PIPE,
-            stderr=STDOUT,
             timeout=IDENTITY_COMMAND_TIMEOUT_SECONDS,
             check=False,
         )

@@ -3,6 +3,7 @@
 ## Unreleased
 
 * feat(renderer): decrypt encrypted values inside YAML lists
+* fix(renderer): read command identities from stdout only and pass stderr through
 
 ## 0.5.0
 

@@ -12,7 +12,11 @@ from tests.unit.renderers import _test_identity
 @pytest.fixture
 def identity_command(tmp_path: Path, example_age_key_str: str) -> list[str]:
     script_path = tmp_path / "print_identity.py"
-    _ = script_path.write_text(f"print({example_age_key_str!r})")
+    _ = script_path.write_text(
+        "import sys\n"
+        "print('gpg: test key expired', file=sys.stderr)\n"
+        f"print({example_age_key_str!r})\n"
+    )
     return [sys.executable, str(script_path)]
 
 
@@ -34,5 +38,6 @@ def configure_loader_modules(
     return {age: {"__salt__": {"config.get": config_get}}}
 
 
-def test() -> None:
+def test(capfd: pytest.CaptureFixture[str]) -> None:
     _test_identity.test()
+    assert capfd.readouterr() == ("", "gpg: test key expired\n")
